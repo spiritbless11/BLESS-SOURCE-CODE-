@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOURCE CODE VIEWER | Blessing Lusakumunu</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --navy-primary: #001F6B;
+            --navy-dark: #000d1f;
+            --navy-darker: #000510;
+            --blue-secondary: #0047AB;
+            --gold-accent: #F5C400;
+            --red-action: #CC0000;
+            --red-dark: #990000;
+            --text-dark: #1A202C;
+            --text-muted: #8892b0;
+            --border-color: #1e293b;
+        }
+
+        body {
+            background: var(--navy-darker);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Header exact comme WA Support */
+        .header {
+            background: linear-gradient(180deg, #0a0f1f 0%, #050810 100%);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo-red {
+            background: linear-gradient(135deg, var(--red-action) 0%, var(--red-dark) 100%);
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 15px rgba(204, 0, 0, 0.5);
+        }
+
+        .logo-text h3 {
+            color: var(--red-action);
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .logo-text span {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            display: block;
+            margin-top: -5px;
+        }
+
+        .menu-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Hero Banner exact */
+        .hero-banner {
+            background: linear-gradient(135deg, rgba(0,31,107,0.95) 0%, rgba(0,10,31,0.98) 100%);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            border-bottom: 2px solid var(--red-action);
+            overflow: hidden;
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(245, 196, 0, 0.1) 0%, transparent 70%);
+        }
+
+        .badge-red {
+            display: inline-block;
+            background: rgba(204, 0, 0, 0.2);
+            border: 2px solid var(--red-action);
+            color: var(--red-action);
+            padding: 0.4rem 1.2rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: 3px;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--red-action);
+            margin-bottom: 0.5rem;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(204, 0, 0, 0.5);
+        }
+
+        .hero-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .dev-credit {
+            color: var(--gold-accent);
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        /* Toggle Buttons exact */
+        .toggle-section {
+            display: flex;
+            max-width: 600px;
+            margin: 2rem auto;            background: rgba(0,10,31,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, var(--red-action) 0%, var(--red-dark) 100%);
+            color: #fff;
+        }
+
+        .toggle-btn:not(.active):hover {
+            background: rgba(245, 196, 0, 0.1);
+            color: var(--gold-accent);
+        }
+
+        /* Main Section */
+        .main-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem 3rem;
+        }
+
+        .section-title {
+            color: var(--red-action);
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .input-card {
+            background: rgba(0,31,107,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .url-input {
+            flex: 1;
+            background: rgba(0,5,15,0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: var(--gold-accent);
+        }
+
+        .url-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, var(--red-action) 0%, var(--red-dark) 100%);
+            border: none;
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 5px 20px rgba(204, 0, 0, 0.4);
+            transition: all 0.3s;        }
+
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(245, 196, 0, 0.4);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Stats Section exact */
+        .stats-section {
+            margin-top: 3rem;
+        }
+
+        .stats-title {
+            color: var(--red-action);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(0,31,107,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--gold-accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(245, 196, 0, 0.15);
+        }
+
+        .stat-icon {            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gold-accent);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Code Display */
+        .code-section {
+            background: rgba(0,31,107,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .code-header {
+            background: rgba(0,5,15,0.8);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-label {
+            color: var(--gold-accent);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .btn-copy {
+            background: transparent;
+            border: 1px solid var(--gold-accent);
+            color: var(--gold-accent);
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            cursor: pointer;            transition: all 0.3s;
+        }
+
+        .btn-copy:hover {
+            background: var(--gold-accent);
+            color: var(--navy-darker);
+        }
+
+        .btn-copy:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .code-content {
+            background: rgba(0,5,15,0.9);
+            min-height: 400px;
+            max-height: 600px;
+            overflow: auto;
+            padding: 1.5rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .code-line {
+            display: flex;
+            margin-bottom: 2px;
+        }
+
+        .line-num {
+            color: var(--gold-accent);
+            width: 50px;
+            text-align: right;
+            margin-right: 1.5rem;
+            opacity: 0.6;
+            user-select: none;
+        }
+
+        .line-code {
+            flex: 1;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status-msg {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+            font-style: italic;        }
+
+        .error-box {
+            background: rgba(204, 0, 0, 0.1);
+            border-left: 4px solid var(--red-action);
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 8px;
+        }
+
+        .error-box strong {
+            color: var(--red-action);
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            color: var(--gold-accent);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(245, 196, 0, 0.2);
+            border-top-color: var(--gold-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer exact */
+        footer {
+            background: rgba(0,5,15,0.9);
+            border-top: 1px solid var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .footer-created {            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-created span {
+            color: var(--red-action);
+            font-weight: 700;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--gold-accent);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--navy-darker);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold-accent);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .input-wrapper { flex-direction: column; }
+            .hero-title { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo-red">🔍</div>
+            <div class="logo-text">
+                <h3>BLESSING DEV</h3>
+                <span>Source Code Viewer</span>
+            </div>
+        </div>
+        <div class="menu-btn">☰</div>
+    </div>
+
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+        <div class="badge-red">CODE INSPECTION</div>
+        <h1 class="hero-title">SOURCE CODE VIEWER</h1>
+        <p class="hero-subtitle">HTML CSS JAVASCRIPT ANALYSIS TOOL</p>
+        <div class="dev-credit">BY 〆⎯⃝𝐁𝐋𝐄𝐒𝐒𝐑𝐈𝐌𝐄𝐍𝐄𝐗𝐔𝐒𝐃𝐄𝐕 ͎</div>
+    </div>
+
+    <!-- Toggle Buttons -->
+    <div class="toggle-section">
+        <button class="toggle-btn active">
+            <span>📄</span> VIEW CODE
+        </button>
+        <button class="toggle-btn">
+            <span>📊</span> STATISTICS
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="section-title">
+            <span>🎯</span>
+            <span>Enter Website URL</span>
+        </div>
+
+        <div class="input-card">
+            <div class="input-wrapper">
+                <input type="url" id="urlInput" class="url-input" placeholder="https://example.com">
+                <button class="btn-send" id="fetchBtn" onclick="fetchSource()">
+                    <span>🔍</span>
+                    <span>ANALYZE</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-section">            <div class="stats-title">
+                <span>📊</span>
+                <span>SYSTEM STATISTICS</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📄</div>
+                    <span class="stat-number">HTML</span>
+                    <div class="stat-text">Structure Analysis</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎨</div>
+                    <span class="stat-number">CSS</span>
+                    <div class="stat-text">Styles Extraction</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <span class="stat-number">JS</span>
+                    <div class="stat-text">Scripts Detection</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔒</div>
+                    <span class="stat-number">100%</span>
+                    <div class="stat-text">Secure & Fast</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Display -->
+        <div class="code-section">
+            <div class="code-header">
+                <div class="code-label" id="fileName">WAITING FOR ANALYSIS...</div>
+                <button class="btn-copy" id="copyBtn" onclick="copyCode()" disabled>📋 COPY</button>
+            </div>
+            <div class="code-content" id="codeContent">
+                <div class="status-msg">
+                    Enter a valid URL above and click "ANALYZE" to view the complete source code.<br><br>
+                    The tool will display HTML code with line numbering.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-created">
+            CREATED BY <span>BLESSING LUSAKUMUNU</span>
+        </div>
+        <div class="footer-links">
+            <a href="https://whatsapp.com/channel/0029Vb78ycrInlqYocbYLX0P" target="_blank">WhatsApp</a>            <a href="https://t.me/ThelastUnknowDev11" target="_blank">Telegram</a>
+        </div>
+    </footer>
+
+    <script>
+        let currentCode = '';
+
+        async function fetchSource() {
+            const urlInput = document.getElementById('urlInput');
+            const codeContent = document.getElementById('codeContent');
+            const fetchBtn = document.getElementById('fetchBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const fileName = document.getElementById('fileName');
+            
+            let url = urlInput.value.trim();
+
+            if (!url) {
+                alert("Please enter a valid URL");
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+
+            fetchBtn.disabled = true;
+            fetchBtn.innerHTML = '<span>⏳</span><span>LOADING...</span>';
+            copyBtn.disabled = true;
+            fileName.textContent = 'ANALYZING...';
+            codeContent.innerHTML = '<div class="loading"><div class="spinner"></div>Retrieving source code...</div>';
+
+            try {
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
+                
+                const htmlText = await response.text();
+                if (!htmlText || htmlText.length < 100) throw new Error("Empty or invalid content");
+
+                currentCode = formatHTML(htmlText);
+                displayCode(currentCode);
+                
+                fileName.textContent = `📄 ${new URL(url).hostname}`;
+                copyBtn.disabled = false;
+
+            } catch (error) {
+                codeContent.innerHTML = `
+                    <div class="error-box">
+                        <strong>ANALYSIS FAILED</strong>                        ${error.message}<br><br>
+                        The site may block proxy requests or the URL is incorrect.
+                    </div>
+                `;
+                fileName.textContent = 'ERROR';
+            } finally {
+                fetchBtn.disabled = false;
+                fetchBtn.innerHTML = '<span>🔍</span><span>ANALYZE</span>';
+            }
+        }
+
+        function formatHTML(html) {
+            let formatted = '';
+            let indent = 0;
+            const tokens = html.split(/(?=<)|(?<=>)/).filter(t => t.trim() !== '');
+            
+            tokens.forEach(token => {
+                token = token.trim();
+                if (!token) return;
+                if (token.match(/^<\/\w/)) indent = Math.max(0, indent - 1);
+                formatted += '  '.repeat(indent) + token + '\n';
+                if (token.match(/^<\w[^>]*[^\/]>$/) && !token.match(/^<(br|hr|img|input|meta|link|area|base|col|embed|source|track|wbr)/i)) indent++;
+            });
+            return formatted.trim();
+        }
+
+        function displayCode(code) {
+            const codeContent = document.getElementById('codeContent');
+            codeContent.innerHTML = '';
+            const lines = code.split('\n');
+            
+            lines.forEach((line, index) => {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'code-line';
+                
+                const numSpan = document.createElement('span');
+                numSpan.className = 'line-num';
+                numSpan.textContent = index + 1;
+                
+                const codeSpan = document.createElement('span');
+                codeSpan.className = 'line-code';
+                codeSpan.textContent = line || ' ';
+                
+                lineDiv.appendChild(numSpan);
+                lineDiv.appendChild(codeSpan);
+                codeContent.appendChild(lineDiv);
+            });
+        }
+
+        function copyCode() {            if (!currentCode) return;
+            navigator.clipboard.writeText(currentCode).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const original = btn.textContent;
+                btn.textContent = '✅ COPIED!';
+                setTimeout(() => btn.textContent = original, 2000);
+            });
+        }
+
+        document.getElementById('urlInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') fetchSource();
+        });
+    </script>
+</body>
+</html>
