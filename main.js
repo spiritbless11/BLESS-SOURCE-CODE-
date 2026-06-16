@@ -1215,11 +1215,40 @@ function downloadCode() {
    FETCH & CORS PROXY MANAGER
    ========================================================================== */
 const PROXIES = [
-  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
-  u => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(u)}`,
-  u => `https://cors-anywhere.herokuapp.com/${u}`
+  {
+    name: "Proxy 1 (AllOrigins JSON - Stable)",
+    fetch: async (u, signal) => {
+      const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, { signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (!json || !json.contents) throw new Error("Réponse vide du proxy");
+      return json.contents;
+    }
+  },
+  {
+    name: "Proxy 2 (AllOrigins Raw)",
+    fetch: async (u, signal) => {
+      const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`, { signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.text();
+    }
+  },
+  {
+    name: "Proxy 3 (Corsproxy.io)",
+    fetch: async (u, signal) => {
+      const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(u)}`, { signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.text();
+    }
+  },
+  {
+    name: "Proxy 4 (Codetabs)",
+    fetch: async (u, signal) => {
+      const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, { signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.text();
+    }
+  }
 ];
 
 // Visual state helper for proxies
@@ -1241,6 +1270,23 @@ async function fetchWithFallback(url) {
   const errors = [];
   resetProxyUI();
 
+  // Essayer d'abord un chargement direct sans proxy (au cas où le CORS est actif ou si c'est du localhost)
+  try {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 3500);
+    const res = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(tid);
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text.length > 200) {
+        console.log("🔥 Analyse directe (sans proxy) réussie !");
+        return text;
+      }
+    }
+  } catch (directErr) {
+    console.warn("ℹ️ Fetch direct sans proxy impossible, passage aux proxies CORS...", directErr);
+  }
+
   // Reconstruire l'ordre des proxies à essayer
   let proxiesToTry = [];
 
@@ -1250,16 +1296,21 @@ async function fetchWithFallback(url) {
     proxiesToTry.push({
       index: -1,
       name: "Proxy Personnalisé",
-      fn: u => customPrefix.includes('url=') ? `${customPrefix}${encodeURIComponent(u)}` : `${customPrefix}${u}`
+      fetch: async (u, signal) => {
+        const fullUrl = customPrefix.includes('url=') ? `${customPrefix}${encodeURIComponent(u)}` : `${customPrefix}${u}`;
+        const res = await fetch(fullUrl, { signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.text();
+      }
     });
   }
 
   // 2. Ajouter le proxy préféré
-  const preferredIdx = parseInt(settings.preferredProxy || '0');
+  const preferredIdx = Math.min(parseInt(settings.preferredProxy || '0'), PROXIES.length - 1);
   proxiesToTry.push({
     index: preferredIdx,
-    name: `Proxy Préféré (${preferredIdx + 1})`,
-    fn: PROXIES[preferredIdx]
+    name: PROXIES[preferredIdx].name,
+    fetch: PROXIES[preferredIdx].fetch
   });
 
   // 3. Ajouter les autres proxies restants
@@ -1267,8 +1318,8 @@ async function fetchWithFallback(url) {
     if (i !== preferredIdx) {
       proxiesToTry.push({
         index: i,
-        name: `Proxy ${i + 1}`,
-        fn: PROXIES[i]
+        name: PROXIES[i].name,
+        fetch: PROXIES[i].fetch
       });
     }
   }
@@ -1281,27 +1332,20 @@ async function fetchWithFallback(url) {
         updateProxyUI(p.index, 'active');
       }
       
-      const proxyUrlName = p.index >= 0 ? `Proxy ${p.index + 1}` : "Proxy Personnalisé";
-      document.getElementById('loadingSub').textContent = `Essai avec ${proxyUrlName}...`;
+      document.getElementById('loadingSub').textContent = `Essai avec ${p.name}...`;
       
       const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 9000);
+      const tid = setTimeout(() => ctrl.abort(), 12000); // 12 secondes de timeout
       
-      const res = await fetch(p.fn(url), { signal: ctrl.signal });
+      const text = await p.fetch(url, ctrl.signal);
       clearTimeout(tid);
       
-      if (!res.ok) {
-        if (p.index >= 0) updateProxyUI(p.index, 'error');
-        errors.push(`${proxyUrlName}: HTTP ${res.status}`);
-        continue;
-      }
-      
-      const text = await res.text();
       if (!text || text.length < 80) {
         if (p.index >= 0) updateProxyUI(p.index, 'error');
-        errors.push(`${proxyUrlName}: contenu vide/trop court`);
+        errors.push(`${p.name}: contenu vide/trop court`);
         continue;
       }
+
       const isCloudflareChallenge = text.includes('cf-browser-verification') || 
                                     text.includes('cf-challenge') || 
                                     (text.includes('Cloudflare') && text.includes('Please turn on JavaScript'));
@@ -1309,7 +1353,7 @@ async function fetchWithFallback(url) {
 
       if (isCloudflareChallenge || isAccessDenied) {
         if (p.index >= 0) updateProxyUI(p.index, 'error');
-        errors.push(`${proxyUrlName}: blocage de sécurité (Cloudflare/Access Denied)`);
+        errors.push(`${p.name}: blocage de sécurité (Cloudflare/Access Denied)`);
         continue;
       }
       
@@ -1391,7 +1435,20 @@ async function handleAnalyze() {
 
   } catch (err) {
     loading.classList.remove('show');
-    document.getElementById('errorMsg').textContent = err.message;
+    
+    // Message d'erreur détaillé + suggestion de contournement
+    const errorMsgEl = document.getElementById('errorMsg');
+    if (errorMsgEl) {
+      errorMsgEl.innerHTML = `${err.message}<br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: var(--rs); border: 1px solid var(--border); margin-top: 8px; text-align: left; line-height: 1.4;">
+          <strong style="color: var(--accent);"><i class="fas fa-magic"></i> Solution de contournement (Console) :</strong><br>
+          Le site cible ou les proxies bloquent la requête automatique.<br>
+          <a href="#" onclick="toggleManualImport(event)" style="color: #fff; text-decoration: underline; font-weight: bold; display: inline-block; margin-top: 6px;">Cliquez ici pour ouvrir l'Importation Manuelle</a> pour coller le code source en bypassant à 100% le CORS !
+        </div>`;
+    } else {
+      document.getElementById('errorMsg').textContent = err.message;
+    }
+    
     errorInfo.classList.add('show');
     showToast('✗ Analyse échouée');
   }
