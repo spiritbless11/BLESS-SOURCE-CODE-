@@ -14,6 +14,18 @@ let canvasRAF = null;
 let sitesCount = parseInt(localStorage.getItem('bl-sites') || '0');
 let linesCount = parseInt(localStorage.getItem('bl-lines') || '0');
 
+// Configuration Globale des Paramètres (Settings)
+const DEFAULT_SETTINGS = {
+  fontSize: '12px',
+  wordWrap: false,
+  lineNumbers: true,
+  preferredProxy: '0',
+  customProxy: '',
+  musicSource: 'funk',
+  autoplay: true
+};
+let settings = JSON.parse(localStorage.getItem('bl-settings') || JSON.stringify(DEFAULT_SETTINGS));
+
 // Parser and Search variables
 let parsedData = null;
 let searchMatches = [];
@@ -187,6 +199,98 @@ function handleLogout() {
   setTimeout(() => {
     window.location.href = 'auth.html';
   }, 1000);
+}
+
+// ==========================================================================
+// GESTION DU TIROIR DES PARAMÈTRES (SETTINGS)
+// ==========================================================================
+function openSettings() {
+  updateSettingsUI();
+  document.getElementById('settingsDrawer').classList.add('open');
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsDrawer').classList.remove('open');
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+
+function applySettings() {
+  // 1. Taille de police de l'éditeur
+  document.documentElement.style.setProperty('--code-fs', settings.fontSize);
+  
+  // 2. Word Wrap (retour automatique à la ligne)
+  const cc = document.getElementById('codeContent');
+  if (cc) {
+    if (settings.wordWrap) {
+      cc.classList.add('wrap-text');
+    } else {
+      cc.classList.remove('wrap-text');
+    }
+  }
+  
+  // 3. Numéros de ligne
+  if (cc) {
+    if (settings.lineNumbers) {
+      cc.classList.remove('hide-ln');
+    } else {
+      cc.classList.add('hide-ln');
+    }
+  }
+  
+  // 4. Source audio par défaut
+  if (settings.musicSource === 'synth') {
+    currentPlaylistTrack = 'synth';
+    const pBtn = document.getElementById('playlistToggleBtn');
+    if (pBtn) pBtn.innerHTML = '<i class="fas fa-microchip"></i> Synthé';
+  } else {
+    currentPlaylistTrack = 'funk';
+    const pBtn = document.getElementById('playlistToggleBtn');
+    if (pBtn) pBtn.innerHTML = '<i class="fas fa-music"></i> Funk';
+  }
+}
+
+function applySetting(key, val) {
+  settings[key] = val;
+  localStorage.setItem('bl-settings', JSON.stringify(settings));
+  applySettings();
+  showToast('⚙️ Paramètre mis à jour avec succès');
+}
+
+function updateSettingsUI() {
+  const fsSel = document.getElementById('settingFontSize');
+  const wwChk = document.getElementById('settingWordWrap');
+  const lnChk = document.getElementById('settingLineNumbers');
+  const pxSel = document.getElementById('settingPreferredProxy');
+  const pxInp = document.getElementById('settingCustomProxy');
+  const muSel = document.getElementById('settingMusicSource');
+  const apChk = document.getElementById('settingAutoplay');
+  
+  if (fsSel) fsSel.value = settings.fontSize;
+  if (wwChk) wwChk.checked = settings.wordWrap;
+  if (lnChk) lnChk.checked = settings.lineNumbers;
+  if (pxSel) pxSel.value = settings.preferredProxy;
+  if (pxInp) pxInp.value = settings.customProxy;
+  if (muSel) muSel.value = settings.musicSource;
+  if (apChk) apChk.checked = settings.autoplay;
+}
+
+function clearPlatformStats() {
+  if (confirm('Voulez-vous vraiment réinitialiser toutes les statistiques d\'analyse ?')) {
+    localStorage.setItem('bl-sites', '0');
+    localStorage.setItem('bl-lines', '0');
+    sitesCount = 0;
+    linesCount = 0;
+    
+    const sitesVal = document.getElementById('sitesVal');
+    const linesVal = document.getElementById('linesVal');
+    if (sitesVal) sitesVal.textContent = '0';
+    if (linesVal) linesVal.textContent = '0';
+    
+    updateStats();
+    showToast('🗑️ Statistiques réinitialisées !');
+    closeSettings();
+  }
 }
 
 /* Tab Management */
@@ -1069,43 +1173,82 @@ async function fetchWithFallback(url) {
   const errors = [];
   resetProxyUI();
 
+  // Reconstruire l'ordre des proxies à essayer
+  let proxiesToTry = [];
+
+  // 1. Ajouter le proxy personnalisé en priorité absolue si configuré
+  if (settings.customProxy && settings.customProxy.trim()) {
+    const customPrefix = settings.customProxy.trim();
+    proxiesToTry.push({
+      index: -1,
+      name: "Proxy Personnalisé",
+      fn: u => customPrefix.includes('url=') ? `${customPrefix}${encodeURIComponent(u)}` : `${customPrefix}${u}`
+    });
+  }
+
+  // 2. Ajouter le proxy préféré
+  const preferredIdx = parseInt(settings.preferredProxy || '0');
+  proxiesToTry.push({
+    index: preferredIdx,
+    name: `Proxy Préféré (${preferredIdx + 1})`,
+    fn: PROXIES[preferredIdx]
+  });
+
+  // 3. Ajouter les autres proxies restants
   for (let i = 0; i < PROXIES.length; i++) {
+    if (i !== preferredIdx) {
+      proxiesToTry.push({
+        index: i,
+        name: `Proxy ${i + 1}`,
+        fn: PROXIES[i]
+      });
+    }
+  }
+
+  // Essayer chaque proxy dans l'ordre défini
+  for (let step = 0; step < proxiesToTry.length; step++) {
+    const p = proxiesToTry[step];
     try {
-      updateProxyUI(i, 'active');
-      document.getElementById('loadingSub').textContent = `Essai du Proxy ${i + 1}/${PROXIES.length}...`;
+      if (p.index >= 0) {
+        updateProxyUI(p.index, 'active');
+      }
+      
+      const proxyUrlName = p.index >= 0 ? `Proxy ${p.index + 1}` : "Proxy Personnalisé";
+      document.getElementById('loadingSub').textContent = `Essai avec ${proxyUrlName}...`;
       
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 9000);
       
-      const res = await fetch(PROXIES[i](url), { signal: ctrl.signal });
+      const res = await fetch(p.fn(url), { signal: ctrl.signal });
       clearTimeout(tid);
       
       if (!res.ok) {
-        updateProxyUI(i, 'error');
-        errors.push(`Proxy ${i + 1}: HTTP ${res.status}`);
+        if (p.index >= 0) updateProxyUI(p.index, 'error');
+        errors.push(`${proxyUrlName}: HTTP ${res.status}`);
         continue;
       }
       
       const text = await res.text();
       if (!text || text.length < 80) {
-        updateProxyUI(i, 'error');
-        errors.push(`Proxy ${i + 1}: contenu trop court`);
+        if (p.index >= 0) updateProxyUI(p.index, 'error');
+        errors.push(`${proxyUrlName}: contenu vide/trop court`);
         continue;
       }
       if (text.includes('Access Denied') || text.includes('403 Forbidden') || text.includes('Cloudflare')) {
-        updateProxyUI(i, 'error');
-        errors.push(`Proxy ${i + 1}: restriction d'accès CORS`);
+        if (p.index >= 0) updateProxyUI(p.index, 'error');
+        errors.push(`${proxyUrlName}: blocage Cloudflare/CORS`);
         continue;
       }
       
-      updateProxyUI(i, 'success');
+      if (p.index >= 0) updateProxyUI(p.index, 'success');
       return text;
     } catch (e) {
-      updateProxyUI(i, 'error');
-      errors.push(`Proxy ${i + 1}: ${e.message}`);
+      if (p.index >= 0) updateProxyUI(p.index, 'error');
+      errors.push(`${p.name}: ${e.message}`);
     }
   }
-  throw new Error('Tous les proxies ont échoué. Le site bloque peut-être les requêtes externes (CORS/Cloudflare).');
+  
+  throw new Error(`Tous les proxies ont échoué. Détails des erreurs : \n- ${errors.join('\n- ')}`);
 }
 
 async function handleAnalyze() {
@@ -1792,18 +1935,55 @@ function fmtTime(s) {
    ========================================================================== */
 function tryAutoplay() {
   audio.volume = 0.6;
-  const p = audio.play();
-  if (p !== undefined) {
-    p.catch(() => {
-      // Autoplay blocked by browsers, trigger on first screen touch/interaction
-      const start = () => {
-        initAudioSystem();
-        document.removeEventListener('click', start);
-        document.removeEventListener('touchstart', start);
-      };
-      document.addEventListener('click', start, { once: true, passive: true });
-      document.addEventListener('touchstart', start, { once: true, passive: true });
-    });
+  
+  // 1. Configurer la source selon les paramètres
+  if (settings.musicSource === 'synth') {
+    currentPlaylistTrack = 'synth';
+    const pBtn = document.getElementById('playlistToggleBtn');
+    if (pBtn) pBtn.innerHTML = '<i class="fas fa-microchip"></i> Synthé';
+  } else {
+    currentPlaylistTrack = 'funk';
+  }
+
+  // 2. Si l'autoplay est désactivé, on n'essaie pas de jouer au chargement
+  if (!settings.autoplay) {
+    console.log("Audio Autoplay désactivé par l'utilisateur.");
+    const start = () => {
+      if (!isAudioInitialized) initAudioSystem();
+      document.removeEventListener('click', start);
+      document.removeEventListener('touchstart', start);
+    };
+    document.addEventListener('click', start, { once: true, passive: true });
+    document.addEventListener('touchstart', start, { once: true, passive: true });
+    return;
+  }
+
+  // Si autoplay activé, tenter la lecture
+  if (currentPlaylistTrack === 'synth') {
+    const start = () => {
+      initAudioSystem();
+      if (isPlaying) startProceduralSynth();
+      document.removeEventListener('click', start);
+      document.removeEventListener('touchstart', start);
+    };
+    document.addEventListener('click', start, { once: true, passive: true });
+    document.addEventListener('touchstart', start, { once: true, passive: true });
+    initAudioSystem();
+    startProceduralSynth();
+    setPlayerState(true);
+  } else {
+    const p = audio.play();
+    if (p !== undefined) {
+      p.catch(() => {
+        const start = () => {
+          initAudioSystem();
+          document.removeEventListener('click', start);
+          document.removeEventListener('touchstart', start);
+        };
+        document.addEventListener('click', start, { once: true, passive: true });
+        document.addEventListener('touchstart', start, { once: true, passive: true });
+      });
+    }
   }
 }
 
@@ -1849,6 +2029,9 @@ window.addEventListener('load', () => {
       roleDisp.style.textShadow = 'none';
     }
   }
+
+  // Appliquer les paramètres enregistrés
+  applySettings();
 
   updateStats();
   tryAutoplay();

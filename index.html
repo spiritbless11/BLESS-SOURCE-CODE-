@@ -50,6 +50,7 @@
     </div>
     <div class="topbar-right">
       <button class="ctrl" onclick="toggleMode()" id="modeBtn" title="Mode Clair / Sombre"><i class="fas fa-sun"></i></button>
+      <button class="ctrl" onclick="openSettings()" title="Paramètres"><i class="fas fa-cog"></i></button>
       <button class="ctrl" onclick="openMenu()" title="Thèmes & Options"><i class="fas fa-palette"></i></button>
       <button class="ctrl" onclick="handleLogout()" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
     </div>
@@ -101,6 +102,93 @@
       BLESS SOURCE PLATFORM v4.0
     </div>
   </div>
+
+  <!-- ==========================================================================
+     MENU LATERAL PARAMETRES (SETTINGS DRAWER)
+     ========================================================================== -->
+  <div class="d-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+  <div class="drawer" id="settingsDrawer">
+    <div class="d-head">
+      <i class="fas fa-cog"></i> PARAMÈTRES
+      <button class="d-close" onclick="closeSettings()"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="theme-sect-title">Éditeur de Code</div>
+    <div class="settings-group">
+      <div class="setting-item">
+        <span class="setting-label">Taille de police</span>
+        <select id="settingFontSize" onchange="applySetting('fontSize', this.value)" class="setting-select">
+          <option value="11px">Très petit (11px)</option>
+          <option value="12px" selected>Normal (12px)</option>
+          <option value="14px">Grand (14px)</option>
+          <option value="16px">Très grand (16px)</option>
+          <option value="18px">Géant (18px)</option>
+        </select>
+      </div>
+      <div class="setting-item">
+        <span class="setting-label">Retour à la ligne auto</span>
+        <label class="switch">
+          <input type="checkbox" id="settingWordWrap" onchange="applySetting('wordWrap', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="setting-item">
+        <span class="setting-label">Numéros de ligne</span>
+        <label class="switch">
+          <input type="checkbox" id="settingLineNumbers" onchange="applySetting('lineNumbers', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="theme-sect-title">Proxies CORS & Réseau</div>
+    <div class="settings-group">
+      <div class="setting-item">
+        <span class="setting-label">Proxy CORS Préféré</span>
+        <select id="settingPreferredProxy" onchange="applySetting('preferredProxy', this.value)" class="setting-select">
+          <option value="0">Proxy 1 (AllOrigins)</option>
+          <option value="1">Proxy 2 (Corsproxy.io)</option>
+          <option value="2">Proxy 3 (Codetabs)</option>
+          <option value="3">Proxy 4 (ThingProxy)</option>
+          <option value="4">Proxy 5 (Heroku CORS)</option>
+        </select>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 4px 0;">
+        <span class="setting-label" style="font-size: 11px;">Proxy CORS Personnalisé</span>
+        <input type="url" id="settingCustomProxy" onchange="applySetting('customProxy', this.value)" placeholder="https://api.allorigins.win/raw?url=" class="setting-input" style="width: 100%; font-family: var(--fm); font-size: 11px;">
+      </div>
+    </div>
+    
+    <div class="theme-sect-title">Audio & Ambiance</div>
+    <div class="settings-group">
+      <div class="setting-item">
+        <span class="setting-label">Source Audio Initiale</span>
+        <select id="settingMusicSource" onchange="applySetting('musicSource', this.value)" class="setting-select">
+          <option value="funk">Bless Funk Mix (MP3)</option>
+          <option value="synth">Synthétiseur (Live)</option>
+        </select>
+      </div>
+      <div class="setting-item">
+        <span class="setting-label">Lecture Automatique</span>
+        <label class="switch">
+          <input type="checkbox" id="settingAutoplay" onchange="applySetting('autoplay', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="theme-sect-title">Données Locales</div>
+    <div class="settings-group">
+      <button class="action-btn" onclick="clearPlatformStats()" style="width: 100%; min-height: 38px; font-size: 10px; border-radius: var(--rs); display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <i class="fas fa-trash-alt"></i> RÉINITIALISER STATISTIQUES
+      </button>
+    </div>
+    
+    <div class="d-footer">
+      BLESS SOURCE SETTINGS PANEL v1.0
+    </div>
+  </div>
+
 
   <!-- ==========================================================================
      CARTE DE PRESENTATION (HERO CARD)
