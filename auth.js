@@ -6,7 +6,7 @@
 
 // État Global de la Page Auth
 let currentTheme = 'normal';
-let currentMode = 'dark';
+let currentMode = 'light';
 let matrixRAF = null;
 let canvasRAF = null;
 
@@ -26,18 +26,15 @@ const TD = {
 // INITIALISATION DE LA PAGE
 // ==========================================================================
 window.addEventListener('load', () => {
-  // Charger le thème et le mode sauvegardés
+  // Charger le thème sauvegardé
   const savedTheme = localStorage.getItem('bl-theme') || 'normal';
-  const savedMode = localStorage.getItem('bl-mode') || 'dark';
-
   setTheme(savedTheme);
 
-  if (savedMode === 'light') {
-    currentMode = 'light';
-    document.documentElement.setAttribute('data-mode', 'light');
-    const modeBtn = document.getElementById('modeBtn');
-    if (modeBtn) modeBtn.innerHTML = '<i class="fas fa-moon"></i>';
-  }
+  // Forcer le mode clair au démarrage de la plateforme
+  currentMode = 'light';
+  document.documentElement.setAttribute('data-mode', 'light');
+  const modeBtn = document.getElementById('modeBtn');
+  if (modeBtn) modeBtn.innerHTML = '<i class="fas fa-moon"></i>';
 
   // Initialisation des indicateurs d'état Firebase
   initFirebaseStatusBadge();

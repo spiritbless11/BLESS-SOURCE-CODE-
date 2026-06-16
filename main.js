@@ -3,7 +3,7 @@
    ========================================================================== */
 let currentCode = '';
 let currentTheme = 'normal';
-let currentMode = 'dark';
+let currentMode = 'light';
 let activeTab = 'code';
 let activeMediaTab = 'images';
 let isPlaying = false;
@@ -1292,9 +1292,14 @@ async function fetchWithFallback(url) {
         errors.push(`${proxyUrlName}: contenu vide/trop court`);
         continue;
       }
-      if (text.includes('Access Denied') || text.includes('403 Forbidden') || text.includes('Cloudflare')) {
+      const isCloudflareChallenge = text.includes('cf-browser-verification') || 
+                                    text.includes('cf-challenge') || 
+                                    (text.includes('Cloudflare') && text.includes('Please turn on JavaScript'));
+      const isAccessDenied = /<title>[^<]*(Access Denied|403 Forbidden|Blocked)[^<]*<\/title>/i.test(text);
+
+      if (isCloudflareChallenge || isAccessDenied) {
         if (p.index >= 0) updateProxyUI(p.index, 'error');
-        errors.push(`${proxyUrlName}: blocage Cloudflare/CORS`);
+        errors.push(`${proxyUrlName}: blocage de sécurité (Cloudflare/Access Denied)`);
         continue;
       }
       
@@ -2349,15 +2354,14 @@ function loadEditorTemplate(templateId) {
 
 window.addEventListener('load', () => {
   const savedTheme = localStorage.getItem('bl-theme') || 'normal';
-  const savedMode = localStorage.getItem('bl-mode') || 'dark';
 
   setTheme(savedTheme);
 
-  if (savedMode === 'light') {
-    currentMode = 'light';
-    document.documentElement.setAttribute('data-mode', 'light');
-    document.getElementById('modeBtn').innerHTML = '<i class="fas fa-moon"></i>';
-  }
+  // Forcer le mode clair au démarrage de la plateforme
+  currentMode = 'light';
+  document.documentElement.setAttribute('data-mode', 'light');
+  const modeBtn = document.getElementById('modeBtn');
+  if (modeBtn) modeBtn.innerHTML = '<i class="fas fa-moon"></i>';
 
   // Charger les informations de session utilisateur connectée
   const userEmail = localStorage.getItem('bl-user-email') || 'visiteur@platform.com';
