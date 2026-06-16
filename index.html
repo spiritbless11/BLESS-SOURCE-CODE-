@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr" data-theme="normal">
 <head>
+  <!-- PROTECTION ITINÉRAIRE AUTHENTIFICATION -->
+  <script>
+    (function() {
+      if (localStorage.getItem('bl-logged-in') !== 'true') {
+        window.location.href = 'auth.html';
+      }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BLESS SOURCE CODE — Premium Viewer & Analysis</title>
@@ -43,6 +51,7 @@
     <div class="topbar-right">
       <button class="ctrl" onclick="toggleMode()" id="modeBtn" title="Mode Clair / Sombre"><i class="fas fa-sun"></i></button>
       <button class="ctrl" onclick="openMenu()" title="Thèmes & Options"><i class="fas fa-palette"></i></button>
+      <button class="ctrl" onclick="handleLogout()" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </div>
 
@@ -77,6 +86,16 @@
       <i class="fab fa-whatsapp" style="color:#25d366"></i> Chaîne WhatsApp
     </a>
     
+    <div class="theme-sect-title">Utilisateur</div>
+    <div class="user-status-card" id="userStatusCard" style="margin: 0 0 10px; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--rs); display: flex; flex-direction: column; gap: 4px;">
+      <div style="font-size: 9px; color: var(--muted); font-family: var(--fm); text-transform: uppercase;">Session Active</div>
+      <div id="userEmailDisp" style="font-family: var(--fb); font-weight: 700; font-size: 13.5px; color: var(--accent); word-break: break-all; margin-top: 2px;">visiteur@platform.com</div>
+      <div id="userRoleDisp" style="font-family: var(--fm); font-size: 10px; color: var(--text2); margin-top: 2px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">visiteur</div>
+      <button onclick="handleLogout()" style="width: 100%; margin-top: 10px; padding: 8px; background: linear-gradient(135deg, var(--btn), rgba(0,0,0,0.3)); border: 1px solid var(--border); color: #fff; font-family: var(--fd); font-size: 9px; font-weight: 700; border-radius: var(--rs); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;">
+        <i class="fas fa-sign-out-alt"></i> SE DÉCONNECTER
+      </button>
+    </div>
+
     <div class="d-footer">
       DÉVELOPPÉ PAR <span style="color:var(--btn); font-weight: 700;">BLESSING LUSAKUMUNU</span><br>
       BLESS SOURCE PLATFORM v4.0

@@ -178,6 +178,17 @@ function closeMenu() {
   document.getElementById('overlay').classList.remove('open');
 }
 
+function handleLogout() {
+  localStorage.removeItem('bl-logged-in');
+  localStorage.removeItem('bl-user-email');
+  localStorage.removeItem('bl-user-role');
+  localStorage.removeItem('bl-user-uid');
+  showToast('👋 Déconnexion réussie ! A bientôt.');
+  setTimeout(() => {
+    window.location.href = 'auth.html';
+  }, 1000);
+}
+
 /* Tab Management */
 function switchTab(tabId) {
   activeTab = tabId;
@@ -1818,6 +1829,25 @@ window.addEventListener('load', () => {
     currentMode = 'light';
     document.documentElement.setAttribute('data-mode', 'light');
     document.getElementById('modeBtn').innerHTML = '<i class="fas fa-moon"></i>';
+  }
+
+  // Charger les informations de session utilisateur connectée
+  const userEmail = localStorage.getItem('bl-user-email') || 'visiteur@platform.com';
+  const userRole = localStorage.getItem('bl-user-role') || 'visiteur';
+  const emailDisp = document.getElementById('userEmailDisp');
+  const roleDisp = document.getElementById('userRoleDisp');
+  
+  if (emailDisp) emailDisp.textContent = userEmail;
+  if (roleDisp) {
+    if (userRole === 'admin-supreme') {
+      roleDisp.textContent = 'Admin Suprême';
+      roleDisp.style.color = 'var(--accent)';
+      roleDisp.style.textShadow = '0 0 10px var(--glow-acc)';
+    } else {
+      roleDisp.textContent = 'Utilisateur standard';
+      roleDisp.style.color = 'var(--text2)';
+      roleDisp.style.textShadow = 'none';
+    }
   }
 
   updateStats();
