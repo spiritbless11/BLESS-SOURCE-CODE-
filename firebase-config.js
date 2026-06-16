@@ -7,12 +7,12 @@
  */
 
 const FIREBASE_CONFIG = {
-  apiKey: "VOTRE_API_KEY",
-  authDomain: "VOTRE_AUTH_DOMAIN",
-  projectId: "VOTRE_PROJECT_ID",
-  storageBucket: "VOTRE_STORAGE_BUCKET",
-  messagingSenderId: "VOTRE_MESSAGING_SENDER_ID",
-  appId: "VOTRE_APP_ID"
+  apiKey: "AIzaSyDClf8oG0sQraZuBym5IC2tvZyWHUnBCU0",
+  authDomain: "uk-contact-collector-d1d5a.firebaseapp.com",
+  projectId: "https://uk-contact-collector-d1d5a-default-rtdb.firebaseio.com",
+  storageBucket: "VOTRuk-contact-collector-d1d5a.firebasestorage.app",
+  messagingSenderId: "1069663576024",
+  appId: "V1:1069663576024:web:a18e5516b5d899998edcad"
 };
 
 // Variable globale pour déterminer si Firebase est actif
