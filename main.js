@@ -1999,6 +1999,200 @@ function initScrollReveal() {
   document.querySelectorAll('.rv').forEach(el => rvObs.observe(el));
 }
 
+/* ==========================================================================
+   ROUTAGE DES VUES & BARRE DE NAVIGATION (NEW)
+   ========================================================================== */
+let activeView = 'home';
+
+function switchView(viewId) {
+  activeView = viewId;
+  localStorage.setItem('bl-active-view', viewId);
+
+  // Masquer toutes les vues
+  document.querySelectorAll('.page-view').forEach(v => {
+    v.classList.remove('active');
+  });
+
+  // Afficher la vue ciblée
+  const tgt = document.getElementById('view-' + viewId);
+  if (tgt) tgt.classList.add('active');
+
+  // Mettre à jour l'état actif dans la barre de navigation du bas
+  document.querySelectorAll('.b-nav-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  const activeBtn = document.getElementById('btn-nav-' + viewId);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  // Re-déclencher ScrollReveal sur le changement d'onglet
+  initScrollReveal();
+
+  showToast(`📍 Navigation : ${viewId.toUpperCase()}`);
+}
+
+// Redirections pour compatibilité avec les anciens tiroirs
+function openMenu() { switchView('settings'); }
+function closeMenu() {}
+function openSettings() { switchView('settings'); }
+function closeSettings() {}
+
+/* ==========================================================================
+   LOGIQUE DE L'ÉDITEUR DE CODE INTERACTIF (NEW)
+   ========================================================================== */
+let activeEditorTab = 'html';
+
+const EDITOR_TEMPLATES = {
+  basic: {
+    html: `<!-- Page de Base Bless Dev -->\n<div class="card">\n  <h1>Bienvenue dans l'Éditeur Bless Source !</h1>\n  <p>Modifiez le code HTML, CSS ou JS et cliquez sur Lancer.</p>\n  <button id="alertBtn">Cliquez-moi</button>\n</div>`,
+    css: `/* Style de base */\nbody {\n  background: #050810;\n  color: #dde1f0;\n  font-family: 'Rajdhani', sans-serif;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 90vh;\n  margin: 0;\n}\n.card {\n  background: #0a0f1f;\n  border: 1px solid rgba(255,255,255,0.08);\n  padding: 30px;\n  border-radius: 12px;\n  text-align: center;\n  box-shadow: 0 8px 24px rgba(0,0,0,0.5);\n  max-width: 400px;\n}\nh1 {\n  color: #F5C400;\n  font-size: 22px;\n  margin-bottom: 15px;\n}\nbutton {\n  background: #CC0000;\n  color: #fff;\n  border: none;\n  padding: 10px 20px;\n  font-weight: bold;\n  border-radius: 6px;\n  cursor: pointer;\n  margin-top: 10px;\n  transition: 0.2s;\n}\nbutton:hover {\n  background: #ff3333;\n}`,
+    js: `// Logique simple\nconst btn = document.getElementById('alertBtn');\nif (btn) {\n  btn.addEventListener('click', () => {\n    alert('Bonjour de la part de Blessing Lusakumu !');\n  });\n}`
+  },
+  neon: {
+    html: `<!-- Glitch Néon & Effet Cyberpunk -->\n<div class="neon-box">\n  <h1 class="neon-text">GLITCH NÉON</h1>\n  <p>Style de design Cyberpunk Premium</p>\n  <button class="neon-btn">INITIALISER</button>\n</div>`,
+    css: `/* Thème Cyber/Néon */\nbody {\n  background: #0f0219;\n  color: #00f0ff;\n  font-family: monospace;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 90vh;\n  margin: 0;\n}\n.neon-box {\n  border: 2px solid #ff007f;\n  padding: 40px;\n  text-align: center;\n  box-shadow: 0 0 20px #ff007f, inset 0 0 10px #ff007f;\n  background: rgba(0,0,0,0.8);\n}\n.neon-text {\n  font-size: 32px;\n  text-shadow: 0 0 10px #00f0ff;\n  color: #00f0ff;\n  margin: 0 0 10px;\n}\n.neon-btn {\n  background: transparent;\n  color: #ff007f;\n  border: 2px solid #ff007f;\n  padding: 12px 24px;\n  font-weight: bold;\n  cursor: pointer;\n  text-shadow: 0 0 5px #ff007f;\n  box-shadow: 0 0 10px #ff007f;\n  transition: 0.3s;\n}\n.neon-btn:hover {\n  background: #ff007f;\n  color: #fff;\n  box-shadow: 0 0 25px #ff007f;\n}`,
+    js: `// Glitch cyber interaction\nconst btn = document.querySelector('.neon-btn');\nif (btn) {\n  btn.addEventListener('click', () => {\n    btn.innerText = 'MODE COMPILÉ';\n    setTimeout(() => btn.innerText = 'INITIALISER', 1500);\n  });\n}`
+  },
+  form: {
+    html: `<!-- Formulaire de Contact Premium -->\n<div class="login-box">\n  <h2>Nous Contacter</h2>\n  <form onsubmit="event.preventDefault(); alert('Message envoyé !');">\n    <div class="user-box">\n      <input type="text" required="">\n      <label>Nom Complet</label>\n    </div>\n    <div class="user-box">\n      <input type="email" required="">\n      <label>Email</label>\n    </div>\n    <button type="submit">Envoyer</button>\n  </form>\n</div>`,
+    css: `/* Style Formulaire Premium */\nbody {\n  margin:0;\n  padding:0;\n  font-family: sans-serif;\n  background: #070707;\n  display:flex;\n  align-items:center;\n  justify-content:center;\n  height: 90vh;\n}\n.login-box {\n  width: 320px;\n  padding: 40px;\n  background: #171717;\n  box-sizing: border-box;\n  box-shadow: 0 15px 25px rgba(0,0,0,.6);\n  border-radius: 10px;\n  border: 1px solid #d4af37;\n}\n.login-box h2 {\n  margin: 0 0 30px;\n  padding: 0;\n  color: #fff;\n  text-align: center;\n}\n.login-box .user-box {\n  position: relative;\n}\n.login-box .user-box input {\n  width: 100%;\n  padding: 10px 0;\n  font-size: 16px;\n  color: #fff;\n  margin-bottom: 30px;\n  border: none;\n  border-bottom: 1px solid #fff;\n  outline: none;\n  background: transparent;\n}\n.login-box .user-box label {\n  position: absolute;\n  top:0;\n  left: 0;\n  padding: 10px 0;\n  font-size: 16px;\n  color: #fff;\n  pointer-events: none;\n  transition: .5s;\n}\n.login-box .user-box input:focus ~ label,\n.login-box .user-box input:valid ~ label {\n  top: -20px;\n  left: 0;\n  color: #d4af37;\n  font-size: 12px;\n}\n.login-box button {\n  background: #d4af37;\n  border: none;\n  color: #000;\n  font-weight: bold;\n  padding: 10px 20px;\n  width: 100%;\n  border-radius: 5px;\n  cursor: pointer;\n  text-transform: uppercase;\n  letter-spacing: 2px;\n}`,
+    js: `// Logique formulaire vide`
+  },
+  empty: { html: '', css: '', js: '' }
+};
+
+function switchEditorTab(tabId) {
+  activeEditorTab = tabId;
+  
+  // Onglets UI
+  document.querySelectorAll('.editor-tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  const activeBtn = document.getElementById('btn-editor-' + tabId);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  // Inputs UI
+  document.querySelectorAll('.editor-input-area').forEach(area => {
+    area.classList.remove('active');
+  });
+  const activeArea = document.getElementById('area-editor-' + tabId);
+  if (activeArea) activeArea.classList.add('active');
+}
+
+function runEditorCode() {
+  const html = document.getElementById('editorHtmlInput').value;
+  const css = document.getElementById('editorCssInput').value;
+  const js = document.getElementById('editorJsInput').value;
+
+  const iframe = document.getElementById('editorPreviewIframe');
+  if (!iframe) return;
+
+  // Injection propre du code dans l'iframe
+  const codeCombined = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        ${css}
+      </style>
+    </head>
+    <body>
+      ${html}
+      <script>
+        try {
+          ${js}
+        } catch (err) {
+          console.error("Erreur d'exécution JS dans l'Aperçu : ", err);
+        }
+      </script>
+    </body>
+    </html>
+  `;
+
+  iframe.srcdoc = codeCombined;
+}
+
+function importToEditor() {
+  if (!currentCode) {
+    showToast("⚠️ Aucun code source disponible. Veuillez d'abord analyser un site.");
+    switchView('analyzer');
+    return;
+  }
+
+  document.getElementById('editorHtmlInput').value = currentCode;
+  document.getElementById('editorCssInput').value = '';
+  document.getElementById('editorJsInput').value = '';
+
+  showToast("✓ Code HTML importé avec succès dans l'Éditeur !");
+  switchEditorTab('html');
+  runEditorCode();
+}
+
+function downloadEditorCode() {
+  const html = document.getElementById('editorHtmlInput').value;
+  const css = document.getElementById('editorCssInput').value;
+  const js = document.getElementById('editorJsInput').value;
+
+  if (!html && !css && !js) {
+    showToast("⚠️ L'éditeur est vide.");
+    return;
+  }
+
+  const exportCode = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Export Bless Code Editor</title>
+  <style>
+    ${css}
+  </style>
+</head>
+<body>
+  ${html}
+  <script>
+    ${js}
+  </script>
+</body>
+</html>
+  `.trim();
+
+  const b = new Blob([exportCode], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = 'bless-editor-export.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast("✓ Fichier HTML de l'éditeur téléchargé !");
+}
+
+function clearEditor() {
+  if (confirm("Voulez-vous vraiment vider tout le code de l'éditeur ?")) {
+    document.getElementById('editorHtmlInput').value = '';
+    document.getElementById('editorCssInput').value = '';
+    document.getElementById('editorJsInput').value = '';
+    runEditorCode();
+    showToast("🗑️ Éditeur réinitialisé");
+  }
+}
+
+function loadSelectedTemplate() {
+  const sel = document.getElementById('editorTemplateSelect');
+  if (!sel) return;
+  loadEditorTemplate(sel.value);
+}
+
+function loadEditorTemplate(templateId) {
+  const tmpl = EDITOR_TEMPLATES[templateId] || EDITOR_TEMPLATES.empty;
+
+  document.getElementById('editorHtmlInput').value = tmpl.html || '';
+  document.getElementById('editorCssInput').value = tmpl.css || '';
+  document.getElementById('editorJsInput').value = tmpl.js || '';
+
+  runEditorCode();
+  showToast(`✨ Modèle "${templateId}" chargé`);
+}
+
 window.addEventListener('load', () => {
   const savedTheme = localStorage.getItem('bl-theme') || 'normal';
   const savedMode = localStorage.getItem('bl-mode') || 'dark';
@@ -2036,6 +2230,13 @@ window.addEventListener('load', () => {
   updateStats();
   tryAutoplay();
   initScrollReveal();
+
+  // Initialiser la vue active enregistrée
+  const savedView = localStorage.getItem('bl-active-view') || 'home';
+  switchView(savedView);
+
+  // Charger le modèle par défaut dans l'éditeur
+  loadEditorTemplate('basic');
 
   // Setup Code Search Keybindings
   const searchInput = document.getElementById('codeSearch');

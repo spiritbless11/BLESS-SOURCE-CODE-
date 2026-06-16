@@ -50,474 +50,539 @@
     </div>
     <div class="topbar-right">
       <button class="ctrl" onclick="toggleMode()" id="modeBtn" title="Mode Clair / Sombre"><i class="fas fa-sun"></i></button>
-      <button class="ctrl" onclick="openSettings()" title="Paramètres"><i class="fas fa-cog"></i></button>
-      <button class="ctrl" onclick="openMenu()" title="Thèmes & Options"><i class="fas fa-palette"></i></button>
+      <button class="ctrl" onclick="switchView('settings')" title="Paramètres"><i class="fas fa-cog"></i></button>
+      <button class="ctrl" onclick="switchView('settings')" title="Thèmes & Options"><i class="fas fa-palette"></i></button>
       <button class="ctrl" onclick="handleLogout()" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </div>
 
   <!-- ==========================================================================
-     MENU LATERAL TIROIR (SIDEBAR DRAWER)
+     BARRE DE NAVIGATION INFÉRIEURE WHATSAPP STYLE (BOTTOM NAV)
      ========================================================================== -->
-  <div class="d-overlay" id="overlay" onclick="closeMenu()"></div>
-  <div class="drawer" id="drawer">
-    <div class="d-head">
-      <i class="fas fa-palette"></i> THÈMES & DESIGNS
-      <button class="d-close" onclick="closeMenu()"><i class="fas fa-times"></i></button>
+  <div class="bottom-nav">
+    <button class="b-nav-btn active" onclick="switchView('home')" id="btn-nav-home">
+      <i class="fas fa-home"></i>
+      <span>Accueil</span>
+    </button>
+    <button class="b-nav-btn" onclick="switchView('analyzer')" id="btn-nav-analyzer">
+      <i class="fas fa-search"></i>
+      <span>Analyseur</span>
+    </button>
+    <button class="b-nav-btn" onclick="switchView('editor')" id="btn-nav-editor">
+      <i class="fas fa-edit"></i>
+      <span>Éditeur</span>
+    </button>
+    <button class="b-nav-btn" onclick="switchView('settings')" id="btn-nav-settings">
+      <i class="fas fa-cog"></i>
+      <span>Paramètres</span>
+    </button>
+  </div>
+
+  <!-- ==========================================================================
+     VUES DE L'APPLICATION (PAGE VIEWS)
+     ========================================================================== -->
+
+  <!-- 1. VUE ACCUEIL (DASHBOARD) -->
+  <div id="view-home" class="page-view active">
+    <!-- CARTE DE PRESENTATION (HERO CARD) -->
+    <div class="hero-card rv">
+      <div class="hero-banner">
+        <div class="hero-banner-inner" id="heroBannerInner">◈</div>
+        <div class="hero-banner-ov"></div>
+        <div class="hero-badge" id="heroBadge">CODE VIEWER</div>
+      </div>
+      <div class="hero-body">
+        <div class="hero-welcome" id="heroWelcome">Bienvenue sur</div>
+        <div class="hero-name">
+          <div class="hero-dot"></div>
+          <span id="heroTitle">BLESS SOURCE CODE</span>
+        </div>
+        <div class="hero-tag" id="heroTag">HTML • CSS • JAVASCRIPT • ANALYSE</div>
+        <div class="hero-stats">
+          <div class="hstat">
+            <i class="fas fa-globe hstat-ico"></i>
+            <div>
+              <span class="hstat-label">Analyses Réussies</span>
+              <span class="hstat-val" id="sitesVal">0</span>
+            </div>
+          </div>
+          <div class="hstat">
+            <i class="fas fa-code hstat-ico"></i>
+            <div>
+              <span class="hstat-label">Lignes Extraites</span>
+              <span class="hstat-val" id="linesVal">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    
-    <div class="theme-sect-title">Choisir une ambiance</div>
-    <div class="theme-grid">
-      <div class="th-opt tn active" onclick="setTheme('normal')"><i class="fas fa-code"></i>Normal</div>
-      <div class="th-opt te" onclick="setTheme('escanor')"><i class="fas fa-sun"></i>Escanor</div>
-      <div class="th-opt th" onclick="setTheme('hacker')"><i class="fas fa-terminal"></i>Hacker</div>
-      <div class="th-opt thr" onclick="setTheme('horror')"><i class="fas fa-skull"></i>Horror</div>
-      <!-- Nouveaux thèmes -->
-      <div class="th-opt tcp" onclick="setTheme('cyberpunk')"><i class="fas fa-bolt"></i>Cyber</div>
-      <div class="th-opt taq" onclick="setTheme('aqua')"><i class="fas fa-tint"></i>Aqua</div>
-      <div class="th-opt tcs" onclick="setTheme('cosmos')"><i class="fas fa-meteor"></i>Cosmos</div>
-      <div class="th-opt tux" onclick="setTheme('luxury')"><i class="fas fa-crown"></i>Luxury</div>
+
+    <!-- STATISTIQUES SYSTEME GLOBALES (SYSTEM STATS) -->
+    <div class="divider rv">
+      <div class="div-line"></div><div class="div-lbl">Rapports Globaux</div><div class="div-line"></div>
     </div>
-    
-    <div class="theme-sect-title">Communauté</div>
-    <a class="d-link" href="https://t.me/ThelastUnknowDev11" target="_blank" rel="noopener">
-      <i class="fab fa-telegram" style="color:#29b6f6"></i> Groupe Telegram
-    </a>
-    <a class="d-link" href="https://whatsapp.com/channel/0029Vb78ycrInlqYocbYLX0P" target="_blank" rel="noopener" style="margin-top: 6px;">
-      <i class="fab fa-whatsapp" style="color:#25d366"></i> Chaîne WhatsApp
-    </a>
-    
-    <div class="theme-sect-title">Utilisateur</div>
-    <div class="user-status-card" id="userStatusCard" style="margin: 0 0 10px; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--rs); display: flex; flex-direction: column; gap: 4px;">
-      <div style="font-size: 9px; color: var(--muted); font-family: var(--fm); text-transform: uppercase;">Session Active</div>
-      <div id="userEmailDisp" style="font-family: var(--fb); font-weight: 700; font-size: 13.5px; color: var(--accent); word-break: break-all; margin-top: 2px;">visiteur@platform.com</div>
-      <div id="userRoleDisp" style="font-family: var(--fm); font-size: 10px; color: var(--text2); margin-top: 2px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">visiteur</div>
-      <button onclick="handleLogout()" style="width: 100%; margin-top: 10px; padding: 8px; background: linear-gradient(135deg, var(--btn), rgba(0,0,0,0.3)); border: 1px solid var(--border); color: #fff; font-family: var(--fd); font-size: 9px; font-weight: 700; border-radius: var(--rs); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;">
-        <i class="fas fa-sign-out-alt"></i> SE DÉCONNECTER
+
+    <div class="sec-label rv">Historique de vos Analyses</div>
+    <div class="stats-card rv">
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="sbi" style="background:rgba(245,196,0,0.1)"><i class="fas fa-file-code" style="color:var(--accent)"></i></div>
+          <div class="sbn">HTML</div>
+          <div class="sbl">Balises structurées</div>
+        </div>
+        <div class="stat-box">
+          <div class="sbi" style="background:rgba(0,71,171,0.1)"><i class="fas fa-palette" style="color:var(--primary)"></i></div>
+          <div class="sbn">CSS</div>
+          <div class="sbl">Chartes graphiques</div>
+        </div>
+        <div class="stat-box">
+          <div class="sbi" style="background:rgba(200,0,0,0.1)"><i class="fas fa-bolt" style="color:var(--btn)"></i></div>
+          <div class="sbn">JS</div>
+          <div class="sbl">Scripts interactifs</div>
+        </div>
+        <div class="stat-box">
+          <div class="sbi" style="background:rgba(0,200,80,0.1)"><i class="fas fa-shield-alt" style="color:#00c853"></i></div>
+          <div class="sbn">100%</div>
+          <div class="sbl">Analyse Sécurisée</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIED DE PAGE (FOOTER) -->
+    <div class="footer rv">
+      <div class="footer-made">CRÉÉ PAR<span id="footerName">BLESS DEV NEXUS TEAM</span></div>
+      <div class="footer-links">
+        <a href="https://t.me/ThelastUnknowDev11" target="_blank" class="f-link"><i class="fab fa-telegram" style="color:#29b6f6"></i>Telegram</a>
+        <a href="https://whatsapp.com/channel/0029Vb78ycrInlqYocbYLX0P" target="_blank" class="f-link"><i class="fab fa-whatsapp" style="color:#25d366"></i>WhatsApp</a>
+      </div>
+      <div class="footer-copy">&copy; 2026 BLESSING LUSAKUMUNU • TOUS DROITS RÉSERVÉS</div>
+    </div>
+  </div>
+
+  <!-- 2. VUE ANALYSEUR (ANALYZER) -->
+  <div id="view-analyzer" class="page-view">
+    <!-- NAVIGATION PAR ONGLETS (TABS BAR) -->
+    <div class="tabs-nav rv" style="display: flex;">
+      <button class="tab-btn active" data-tab="code" onclick="switchTab('code')">
+        <i class="fas fa-code"></i> Code Source
+      </button>
+      <button class="tab-btn" data-tab="seo" onclick="switchTab('seo')">
+        <i class="fas fa-chart-line"></i> Analyse SEO
+      </button>
+      <button class="tab-btn" data-tab="assets" onclick="switchTab('assets')">
+        <i class="fas fa-folder-open"></i> Médias & Liens
+      </button>
+      <button class="tab-btn" data-tab="stats" onclick="switchTab('stats')">
+        <i class="fas fa-chart-pie"></i> Statistiques
       </button>
     </div>
 
-    <div class="d-footer">
-      DÉVELOPPÉ PAR <span style="color:var(--btn); font-weight: 700;">BLESSING LUSAKUMUNU</span><br>
-      BLESS SOURCE PLATFORM v4.0
-    </div>
-  </div>
-
-  <!-- ==========================================================================
-     MENU LATERAL PARAMETRES (SETTINGS DRAWER)
-     ========================================================================== -->
-  <div class="d-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
-  <div class="drawer" id="settingsDrawer">
-    <div class="d-head">
-      <i class="fas fa-cog"></i> PARAMÈTRES
-      <button class="d-close" onclick="closeSettings()"><i class="fas fa-times"></i></button>
-    </div>
-    
-    <div class="theme-sect-title">Éditeur de Code</div>
-    <div class="settings-group">
-      <div class="setting-item">
-        <span class="setting-label">Taille de police</span>
-        <select id="settingFontSize" onchange="applySetting('fontSize', this.value)" class="setting-select">
-          <option value="11px">Très petit (11px)</option>
-          <option value="12px" selected>Normal (12px)</option>
-          <option value="14px">Grand (14px)</option>
-          <option value="16px">Très grand (16px)</option>
-          <option value="18px">Géant (18px)</option>
-        </select>
-      </div>
-      <div class="setting-item">
-        <span class="setting-label">Retour à la ligne auto</span>
-        <label class="switch">
-          <input type="checkbox" id="settingWordWrap" onchange="applySetting('wordWrap', this.checked)">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="setting-item">
-        <span class="setting-label">Numéros de ligne</span>
-        <label class="switch">
-          <input type="checkbox" id="settingLineNumbers" onchange="applySetting('lineNumbers', this.checked)">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-    
-    <div class="theme-sect-title">Proxies CORS & Réseau</div>
-    <div class="settings-group">
-      <div class="setting-item">
-        <span class="setting-label">Proxy CORS Préféré</span>
-        <select id="settingPreferredProxy" onchange="applySetting('preferredProxy', this.value)" class="setting-select">
-          <option value="0">Proxy 1 (AllOrigins)</option>
-          <option value="1">Proxy 2 (Corsproxy.io)</option>
-          <option value="2">Proxy 3 (Codetabs)</option>
-          <option value="3">Proxy 4 (ThingProxy)</option>
-          <option value="4">Proxy 5 (Heroku CORS)</option>
-        </select>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 4px; padding: 4px 0;">
-        <span class="setting-label" style="font-size: 11px;">Proxy CORS Personnalisé</span>
-        <input type="url" id="settingCustomProxy" onchange="applySetting('customProxy', this.value)" placeholder="https://api.allorigins.win/raw?url=" class="setting-input" style="width: 100%; font-family: var(--fm); font-size: 11px;">
-      </div>
-    </div>
-    
-    <div class="theme-sect-title">Audio & Ambiance</div>
-    <div class="settings-group">
-      <div class="setting-item">
-        <span class="setting-label">Source Audio Initiale</span>
-        <select id="settingMusicSource" onchange="applySetting('musicSource', this.value)" class="setting-select">
-          <option value="funk">Bless Funk Mix (MP3)</option>
-          <option value="synth">Synthétiseur (Live)</option>
-        </select>
-      </div>
-      <div class="setting-item">
-        <span class="setting-label">Lecture Automatique</span>
-        <label class="switch">
-          <input type="checkbox" id="settingAutoplay" onchange="applySetting('autoplay', this.checked)">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-    
-    <div class="theme-sect-title">Données Locales</div>
-    <div class="settings-group">
-      <button class="action-btn" onclick="clearPlatformStats()" style="width: 100%; min-height: 38px; font-size: 10px; border-radius: var(--rs); display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <i class="fas fa-trash-alt"></i> RÉINITIALISER STATISTIQUES
-      </button>
-    </div>
-    
-    <div class="d-footer">
-      BLESS SOURCE SETTINGS PANEL v1.0
-    </div>
-  </div>
-
-
-  <!-- ==========================================================================
-     CARTE DE PRESENTATION (HERO CARD)
-     ========================================================================== -->
-  <div class="hero-card rv">
-    <div class="hero-banner">
-      <div class="hero-banner-inner" id="heroBannerInner">◈</div>
-      <div class="hero-banner-ov"></div>
-      <div class="hero-badge" id="heroBadge">CODE VIEWER</div>
-    </div>
-    <div class="hero-body">
-      <div class="hero-welcome" id="heroWelcome">Bienvenue sur</div>
-      <div class="hero-name">
-        <div class="hero-dot"></div>
-        <span id="heroTitle">BLESS SOURCE CODE</span>
-      </div>
-      <div class="hero-tag" id="heroTag">HTML • CSS • JAVASCRIPT • ANALYSE</div>
-      <div class="hero-stats">
-        <div class="hstat">
-          <i class="fas fa-globe hstat-ico"></i>
-          <div>
-            <span class="hstat-label">Analyses Réussies</span>
-            <span class="hstat-val" id="sitesVal">0</span>
+    <!-- PANNEAU DE CONTROLE PRINCIPAL (MAIN CARD) -->
+    <div class="main-card rv">
+      <div class="card-inner">
+        <div class="card-title" id="cardTitle"><i class="fas fa-globe"></i> Analyser un Site Web</div>
+        <p class="card-desc" id="cardDesc">Entrez l'URL du site à analyser. Le code source HTML, CSS et JavaScript sera extrait et analysé instantanément.</p>
+        
+        <!-- Champ de saisie URL -->
+        <div class="input-group">
+          <div class="url-wrap">
+            <span class="url-pfx">https://</span>
+            <input type="url" id="urlInput" class="url-input" placeholder="exemple.com" autocomplete="off" autocapitalize="none">
           </div>
+          <button class="action-btn" onclick="handleAnalyze()">
+            <i class="fas fa-search" id="btnIcon"></i>
+            <span id="btnLabel">ANALYSER</span>
+          </button>
         </div>
-        <div class="hstat">
-          <i class="fas fa-code hstat-ico"></i>
-          <div>
-            <span class="hstat-label">Lignes Extraites</span>
-            <span class="hstat-val" id="linesVal">0</span>
-          </div>
+
+        <!-- États des Nodes de Proxies CORS -->
+        <div class="proxy-status-wrap">
+          <span class="proxy-lbl">État Réseau CORS :</span>
+          <span class="proxy-node" id="proxyNode-0">Proxy 1</span>
+          <span class="proxy-node" id="proxyNode-1">Proxy 2</span>
+          <span class="proxy-node" id="proxyNode-2">Proxy 3</span>
+          <span class="proxy-node" id="proxyNode-3">Proxy 4</span>
+          <span class="proxy-node" id="proxyNode-4">Proxy 5</span>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- ==========================================================================
-     NAVIGATION PAR ONGLETS (TABS BAR)
-     ========================================================================== -->
-  <div class="tabs-nav rv">
-    <button class="tab-btn active" data-tab="code" onclick="switchTab('code')">
-      <i class="fas fa-code"></i> Code Source
-    </button>
-    <button class="tab-btn" data-tab="seo" onclick="switchTab('seo')">
-      <i class="fas fa-chart-line"></i> Analyse SEO
-    </button>
-    <button class="tab-btn" data-tab="assets" onclick="switchTab('assets')">
-      <i class="fas fa-folder-open"></i> Médias & Liens
-    </button>
-    <button class="tab-btn" data-tab="stats" onclick="switchTab('stats')">
-      <i class="fas fa-chart-pie"></i> Statistiques
-    </button>
-  </div>
-
-  <!-- ==========================================================================
-     PANNEAU DE CONTROLE PRINCIPAL (MAIN CARD)
-     ========================================================================== -->
-  <div class="main-card rv">
-    <div class="card-inner">
-      <div class="card-title" id="cardTitle"><i class="fas fa-globe"></i> Analyser un Site Web</div>
-      <p class="card-desc" id="cardDesc">Entrez l'URL du site à analyser. Le code source HTML, CSS et JavaScript sera extrait et analysé instantanément.</p>
-      
-      <!-- Champ de saisie URL -->
-      <div class="input-group">
-        <div class="url-wrap">
-          <span class="url-pfx">https://</span>
-          <input type="url" id="urlInput" class="url-input" placeholder="exemple.com" autocomplete="off" autocapitalize="none">
+        <!-- Spinner de chargement -->
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <div class="loading-text" id="loadingText">RÉCUPÉRATION DU CODE</div>
+          <div class="loading-sub" id="loadingSub">Tentative en cours...</div>
         </div>
-        <button class="action-btn" onclick="handleAnalyze()">
-          <i class="fas fa-search" id="btnIcon"></i>
-          <span id="btnLabel">ANALYSER</span>
-        </button>
-      </div>
 
-      <!-- États des Nodes de Proxies CORS -->
-      <div class="proxy-status-wrap">
-        <span class="proxy-lbl">État Réseau CORS :</span>
-        <span class="proxy-node" id="proxyNode-0">Proxy 1</span>
-        <span class="proxy-node" id="proxyNode-1">Proxy 2</span>
-        <span class="proxy-node" id="proxyNode-2">Proxy 3</span>
-        <span class="proxy-node" id="proxyNode-3">Proxy 4</span>
-        <span class="proxy-node" id="proxyNode-4">Proxy 5</span>
-      </div>
-
-      <!-- Spinner de chargement -->
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <div class="loading-text" id="loadingText">RÉCUPÉRATION DU CODE</div>
-        <div class="loading-sub" id="loadingSub">Tentative en cours...</div>
-      </div>
-
-      <!-- ==========================================
-           1. ONGLET : CODE SOURCE
-           ========================================== -->
-      <div id="tab-code" class="tab-content active">
-        <div class="code-display" id="codeDisplay">
-          <!-- Outil de Recherche dans le Code -->
-          <div class="code-search-bar">
-            <i class="fas fa-search" style="color:var(--muted); font-size: 12px; margin-right: 2px;"></i>
-            <input type="text" id="codeSearch" class="code-search-input" placeholder="Rechercher une balise, classe, texte..." autocomplete="off">
-            <span class="code-search-stats" id="searchCount">0/0</span>
-            <button class="code-search-btn" onclick="searchPrev()" title="Précédent"><i class="fas fa-chevron-up"></i></button>
-            <button class="code-search-btn" onclick="searchNext()" title="Suivant"><i class="fas fa-chevron-down"></i></button>
-          </div>
-
-          <div class="code-header">
-            <span class="code-fname" id="codeFname">source.html</span>
-            <div class="code-acts">
-              <button class="code-btn" onclick="copyCode()"><i class="fas fa-copy"></i> COPIER</button>
-              <button class="code-btn" onclick="downloadCode()" title="Télécharger"><i class="fas fa-download"></i></button>
+        <!-- 1. ONGLET : CODE SOURCE -->
+        <div id="tab-code" class="tab-content active">
+          <div class="code-display" id="codeDisplay">
+            <!-- Outil de Recherche dans le Code -->
+            <div class="code-search-bar">
+              <i class="fas fa-search" style="color:var(--muted); font-size: 12px; margin-right: 2px;"></i>
+              <input type="text" id="codeSearch" class="code-search-input" placeholder="Rechercher une balise, classe, texte..." autocomplete="off">
+              <span class="code-search-stats" id="searchCount">0/0</span>
+              <button class="code-search-btn" onclick="searchPrev()" title="Précédent"><i class="fas fa-chevron-up"></i></button>
+              <button class="code-search-btn" onclick="searchNext()" title="Suivant"><i class="fas fa-chevron-down"></i></button>
             </div>
-          </div>
-          <div class="code-content" id="codeContent"></div>
-        </div>
-      </div>
 
-      <!-- ==========================================
-           2. ONGLET : ANALYSE SEO
-           ========================================== -->
-      <div id="tab-seo" class="tab-content">
-        <div class="seo-wrap" style="margin-top:16px;">
-          <!-- Aperçu de carte de partage -->
-          <div class="og-preview-card">
-            <span class="og-lbl">Aperçu de lien partagé (Simulé)</span>
-            <div class="og-box">
-              <div class="og-site-name" id="ogSiteName">Exemple.com</div>
-              <div class="og-title" id="ogTitle">Titre de la page</div>
-              <div class="og-desc" id="ogDesc">Description de la page détectée sur le site...</div>
-              <img src="" class="og-image" id="ogImg" alt="og-image">
-            </div>
-          </div>
-
-          <!-- Arborescence des titres de page -->
-          <div style="margin-top: 14px;">
-            <span class="og-lbl">Structure Hiérarchique des Titres</span>
-            <div class="headings-tree" id="headingsTree">
-              <div style="color:var(--muted); font-size:12px; text-align:center; padding:12px;">Veuillez analyser un site pour afficher l'arborescence des titres.</div>
-            </div>
-          </div>
-
-          <!-- Analyse et Score SEO -->
-          <div style="margin-top: 14px;">
-            <span class="og-lbl">Checklist SEO Automatique</span>
-            <div class="seo-checklist" id="seoChecklist">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==========================================
-           3. ONGLET : MEDIAS ET LIENS
-           ========================================== -->
-      <div id="tab-assets" class="tab-content">
-        <div class="assets-wrap" style="margin-top:16px;">
-          <div class="sub-tabs">
-            <button class="sub-tab-btn active" data-sub-tab="images" onclick="switchMediaTab('images')">Images</button>
-            <button class="sub-tab-btn" data-sub-tab="scripts" onclick="switchMediaTab('scripts')">Scripts JS</button>
-            <button class="sub-tab-btn" data-sub-tab="styles" onclick="switchMediaTab('styles')">Styles CSS</button>
-            <button class="sub-tab-btn" data-sub-tab="links" onclick="switchMediaTab('links')">Liens Sortants</button>
-          </div>
-
-          <!-- Panel Images Galerie -->
-          <div id="panel-images" class="sub-tab-panel active" style="margin-top:12px;">
-            <div class="image-gallery" id="mediaGallery">
-              <!-- Grid images populated here -->
-            </div>
-          </div>
-
-          <!-- Panel Scripts JS -->
-          <div id="panel-scripts" class="sub-tab-panel" style="margin-top:12px;">
-            <div class="res-list" id="scriptList"></div>
-          </div>
-
-          <!-- Panel CSS -->
-          <div id="panel-styles" class="sub-tab-panel" style="margin-top:12px;">
-            <div class="res-list" id="styleList"></div>
-          </div>
-
-          <!-- Panel Liens -->
-          <div id="panel-links" class="sub-tab-panel" style="margin-top:12px;">
-            <div class="res-list" id="linkList"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==========================================
-           4. ONGLET : STATISTIQUES GRAPHES
-           ========================================== -->
-      <div id="tab-stats" class="tab-content">
-        <div class="stats-tab-grid" style="margin-top:16px;">
-          <!-- SVG Pie Ring Dashboard -->
-          <div class="stats-circle-wrap">
-            <div class="chart-container">
-              <svg class="chart-svg" width="140" height="140" viewBox="0 0 120 120">
-                <circle class="chart-bg-ring" cx="60" cy="60" r="50"></circle>
-                <circle class="chart-fill-ring" id="chartFillRing" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"></circle>
-              </svg>
-              <div class="chart-text">
-                <div class="chart-num" id="chartNum">0%</div>
-                <div class="chart-lbl">Poids HTML</div>
+            <div class="code-header">
+              <span class="code-fname" id="codeFname">source.html</span>
+              <div class="code-acts">
+                <button class="code-btn" onclick="copyCode()"><i class="fas fa-copy"></i> COPIER</button>
+                <button class="code-btn" onclick="downloadCode()" title="Télécharger"><i class="fas fa-download"></i></button>
               </div>
             </div>
-            
-            <div class="chart-legend">
-              <div class="legend-item">
-                <div class="legend-left">
-                  <div class="legend-dot" style="background:var(--accent);"></div>
-                  <span class="legend-name">HTML Brut</span>
+            <div class="code-content" id="codeContent"></div>
+          </div>
+        </div>
+
+        <!-- 2. ONGLET : ANALYSE SEO -->
+        <div id="tab-seo" class="tab-content">
+          <div class="seo-wrap" style="margin-top:16px;">
+            <!-- Aperçu de carte de partage -->
+            <div class="og-preview-card">
+              <span class="og-lbl">Aperçu de lien partagé (Simulé)</span>
+              <div class="og-box">
+                <div class="og-site-name" id="ogSiteName">Exemple.com</div>
+                <div class="og-title" id="ogTitle">Titre de la page</div>
+                <div class="og-desc" id="ogDesc">Description de la page détectée sur le site...</div>
+                <img src="" class="og-image" id="ogImg" alt="og-image">
+              </div>
+            </div>
+
+            <!-- Arborescence des titres de page -->
+            <div style="margin-top: 14px;">
+              <span class="og-lbl">Structure Hiérarchique des Titres</span>
+              <div class="headings-tree" id="headingsTree">
+                <div style="color:var(--muted); font-size:12px; text-align:center; padding:12px;">Veuillez analyser un site pour afficher l'arborescence des titres.</div>
+              </div>
+            </div>
+
+            <!-- Analyse et Score SEO -->
+            <div style="margin-top: 14px;">
+              <span class="og-lbl">Checklist SEO Automatique</span>
+              <div class="seo-checklist" id="seoChecklist">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. ONGLET : MEDIAS ET LIENS -->
+        <div id="tab-assets" class="tab-content">
+          <div class="assets-wrap" style="margin-top:16px;">
+            <div class="sub-tabs">
+              <button class="sub-tab-btn active" data-sub-tab="images" onclick="switchMediaTab('images')">Images</button>
+              <button class="sub-tab-btn" data-sub-tab="scripts" onclick="switchMediaTab('scripts')">Scripts JS</button>
+              <button class="sub-tab-btn" data-sub-tab="styles" onclick="switchMediaTab('styles')">Styles CSS</button>
+              <button class="sub-tab-btn" data-sub-tab="links" onclick="switchMediaTab('links')">Liens Sortants</button>
+            </div>
+
+            <!-- Panel Images Galerie -->
+            <div id="panel-images" class="sub-tab-panel active" style="margin-top:12px;">
+              <div class="image-gallery" id="mediaGallery">
+                <!-- Grid images populated here -->
+              </div>
+            </div>
+
+            <!-- Panel Scripts JS -->
+            <div id="panel-scripts" class="sub-tab-panel" style="margin-top:12px;">
+              <div class="res-list" id="scriptList"></div>
+            </div>
+
+            <!-- Panel CSS -->
+            <div id="panel-styles" class="sub-tab-panel" style="margin-top:12px;">
+              <div class="res-list" id="styleList"></div>
+            </div>
+
+            <!-- Panel Liens -->
+            <div id="panel-links" class="sub-tab-panel" style="margin-top:12px;">
+              <div class="res-list" id="linkList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. ONGLET : STATISTIQUES GRAPHES -->
+        <div id="tab-stats" class="tab-content">
+          <div class="stats-tab-grid" style="margin-top:16px;">
+            <!-- SVG Pie Ring Dashboard -->
+            <div class="stats-circle-wrap">
+              <div class="chart-container">
+                <svg class="chart-svg" width="140" height="140" viewBox="0 0 120 120">
+                  <circle class="chart-bg-ring" cx="60" cy="60" r="50"></circle>
+                  <circle class="chart-fill-ring" id="chartFillRing" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+                </svg>
+                <div class="chart-text">
+                  <div class="chart-num" id="chartNum">0%</div>
+                  <div class="chart-lbl">Poids HTML</div>
                 </div>
-                <span class="legend-val" id="legHtmlVal">0 KB (0%)</span>
               </div>
-              <div class="legend-item">
-                <div class="legend-left">
-                  <div class="legend-dot" style="background:var(--primary);"></div>
-                  <span class="legend-name">Styles CSS (inlines)</span>
+              
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <div class="legend-left">
+                    <div class="legend-dot" style="background:var(--accent);"></div>
+                    <span class="legend-name">HTML Brut</span>
+                  </div>
+                  <span class="legend-val" id="legHtmlVal">0 KB (0%)</span>
                 </div>
-                <span class="legend-val" id="legCssVal">0 KB (0%)</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-left">
-                  <div class="legend-dot" style="background:var(--btn);"></div>
-                  <span class="legend-name">Javascript (inline)</span>
+                <div class="legend-item">
+                  <div class="legend-left">
+                    <div class="legend-dot" style="background:var(--primary);"></div>
+                    <span class="legend-name">Styles CSS (inlines)</span>
+                  </div>
+                  <span class="legend-val" id="legCssVal">0 KB (0%)</span>
                 </div>
-                <span class="legend-val" id="legJsVal">0 KB (0%)</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Meters List -->
-          <div class="stats-meters-card">
-            <div class="meter-row">
-              <div class="meter-info">
-                <span class="meter-lbl">Balises H1-H6 Détectées</span>
-                <span class="meter-val" id="meterHtmlVal">0 items</span>
-              </div>
-              <div class="meter-bar-wrap">
-                <div class="meter-bar-fill" id="meterHtmlBar" style="width:0%;"></div>
+                <div class="legend-item">
+                  <div class="legend-left">
+                    <div class="legend-dot" style="background:var(--btn);"></div>
+                    <span class="legend-name">Javascript (inline)</span>
+                  </div>
+                  <span class="legend-val" id="legJsVal">0 KB (0%)</span>
+                </div>
               </div>
             </div>
 
-            <div class="meter-row">
-              <div class="meter-info">
-                <span class="meter-lbl">Stylesheets CSS Externes</span>
-                <span class="meter-val" id="meterCssVal">0 items</span>
+            <!-- Meters List -->
+            <div class="stats-meters-card">
+              <div class="meter-row">
+                <div class="meter-info">
+                  <span class="meter-lbl">Balises H1-H6 Détectées</span>
+                  <span class="meter-val" id="meterHtmlVal">0 items</span>
+                </div>
+                <div class="meter-bar-wrap">
+                  <div class="meter-bar-fill" id="meterHtmlBar" style="width:0%;"></div>
+                </div>
               </div>
-              <div class="meter-bar-wrap">
-                <div class="meter-bar-fill" id="meterCssBar" style="width:0%;"></div>
-              </div>
-            </div>
 
-            <div class="meter-row">
-              <div class="meter-info">
-                <span class="meter-lbl">Scripts JS Externes</span>
-                <span class="meter-val" id="meterJsVal">0 items</span>
+              <div class="meter-row">
+                <div class="meter-info">
+                  <span class="meter-lbl">Stylesheets CSS Externes</span>
+                  <span class="meter-val" id="meterCssVal">0 items</span>
+                </div>
+                <div class="meter-bar-wrap">
+                  <div class="meter-bar-fill" id="meterCssBar" style="width:0%;"></div>
+                </div>
               </div>
-              <div class="meter-bar-wrap">
-                <div class="meter-bar-fill" id="meterJsBar" style="width:0%;"></div>
-              </div>
-            </div>
 
-            <div class="meter-row">
-              <div class="meter-info">
-                <span class="meter-lbl">Images Uniques Trouvées</span>
-                <span class="meter-val" id="meterMediaVal">0 items</span>
+              <div class="meter-row">
+                <div class="meter-info">
+                  <span class="meter-lbl">Scripts JS Externes</span>
+                  <span class="meter-val" id="meterJsVal">0 items</span>
+                </div>
+                <div class="meter-bar-wrap">
+                  <div class="meter-bar-fill" id="meterJsBar" style="width:0%;"></div>
+                </div>
               </div>
-              <div class="meter-bar-wrap">
-                <div class="meter-bar-fill" id="meterMediaBar" style="width:0%;"></div>
+
+              <div class="meter-row">
+                <div class="meter-info">
+                  <span class="meter-lbl">Images Uniques Trouvées</span>
+                  <span class="meter-val" id="meterMediaVal">0 items</span>
+                </div>
+                <div class="meter-bar-wrap">
+                  <div class="meter-bar-fill" id="meterMediaBar" style="width:0%;"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Info Alert Box -->
-      <div class="info-box success" id="successInfo">
-        <strong><i class="fas fa-check-circle" style="color:var(--primary); margin-right:6px"></i>Analyse réussie !</strong>
-        <span id="successMsg">Code source extrait. Utilisez les onglets ci-dessus pour naviguer dans l'analyse.</span>
-      </div>
-      <div class="info-box error" id="errorInfo">
-        <strong><i class="fas fa-exclamation-circle" style="color:var(--btn); margin-right:6px"></i>Erreur d'analyse</strong>
-        <span id="errorMsg">Impossible de récupérer le code source.</span>
+        <!-- Info Alert Box -->
+        <div class="info-box success" id="successInfo">
+          <strong><i class="fas fa-check-circle" style="color:var(--primary); margin-right:6px"></i>Analyse réussie !</strong>
+          <span id="successMsg">Code source extrait. Utilisez les onglets ci-dessus pour naviguer dans l'analyse.</span>
+        </div>
+        <div class="info-box error" id="errorInfo">
+          <strong><i class="fas fa-exclamation-circle" style="color:var(--btn); margin-right:6px"></i>Erreur d'analyse</strong>
+          <span id="errorMsg">Impossible de récupérer le code source.</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ==========================================================================
-     STATISTIQUES SYSTEME GLOBALES (SYSTEM STATS)
-     ========================================================================== -->
-  <div class="divider rv">
-    <div class="div-line"></div><div class="div-lbl">Rapports Globaux</div><div class="div-line"></div>
-  </div>
+  <!-- 3. VUE ÉDITEUR (CODE EDITOR VIEW) -->
+  <div id="view-editor" class="page-view">
+    <div class="editor-container">
+      <div class="editor-header">
+        <div>
+          <div class="card-title"><i class="fas fa-edit"></i> Éditeur de Code Complet</div>
+          <div style="font-size: 11px; color: var(--muted); font-family: var(--fm); margin-top: 4px;">HTML5 • CSS3 • JAVASCRIPT ES6</div>
+        </div>
+        <div class="editor-actions">
+          <select id="editorTemplateSelect" onchange="loadSelectedTemplate()" class="setting-select" style="min-height:36px; padding:0 10px;">
+            <option value="basic">Modèle de base</option>
+            <option value="neon">Néon Cyberpunk</option>
+            <option value="form">Formulaire Premium</option>
+            <option value="empty">Vide</option>
+          </select>
+          <button class="action-btn editor-btn" onclick="runEditorCode()">
+            <i class="fas fa-play"></i> LANCER
+          </button>
+          <button class="action-btn editor-btn outline-btn" onclick="importToEditor()">
+            <i class="fas fa-file-import"></i> IMPORTER L'ANALYSE
+          </button>
+          <button class="action-btn editor-btn outline-btn" onclick="downloadEditorCode()" title="Télécharger">
+            <i class="fas fa-download"></i>
+          </button>
+          <button class="action-btn editor-btn outline-btn" onclick="clearEditor()" title="Effacer">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
 
-  <div class="sec-label rv">Historique de vos Analyses</div>
-  <div class="stats-card rv">
-    <div class="stats-grid">
-      <div class="stat-box">
-        <div class="sbi" style="background:rgba(245,196,0,0.1)"><i class="fas fa-file-code" style="color:var(--accent)"></i></div>
-        <div class="sbn">HTML</div>
-        <div class="sbl">Balises structurées</div>
-      </div>
-      <div class="stat-box">
-        <div class="sbi" style="background:rgba(0,71,171,0.1)"><i class="fas fa-palette" style="color:var(--primary)"></i></div>
-        <div class="sbn">CSS</div>
-        <div class="sbl">Chartes graphiques</div>
-      </div>
-      <div class="stat-box">
-        <div class="sbi" style="background:rgba(200,0,0,0.1)"><i class="fas fa-bolt" style="color:var(--btn)"></i></div>
-        <div class="sbn">JS</div>
-        <div class="sbl">Scripts interactifs</div>
-      </div>
-      <div class="stat-box">
-        <div class="sbi" style="background:rgba(0,200,80,0.1)"><i class="fas fa-shield-alt" style="color:#00c853"></i></div>
-        <div class="sbn">100%</div>
-        <div class="sbl">Analyse Sécurisée</div>
+      <div class="editor-body">
+        <!-- Workspace (Saisie) -->
+        <div class="editor-workspace">
+          <div class="editor-tabs">
+            <button class="editor-tab-btn active" id="btn-editor-html" onclick="switchEditorTab('html')">HTML</button>
+            <button class="editor-tab-btn" id="btn-editor-css" onclick="switchEditorTab('css')">CSS</button>
+            <button class="editor-tab-btn" id="btn-editor-js" onclick="switchEditorTab('js')">JS</button>
+          </div>
+          
+          <div class="editor-input-area active" id="area-editor-html">
+            <textarea id="editorHtmlInput" class="editor-textarea" placeholder="<!-- Écrivez votre code HTML ici -->" oninput="runEditorCode()"></textarea>
+          </div>
+          <div class="editor-input-area" id="area-editor-css">
+            <textarea id="editorCssInput" class="editor-textarea" placeholder="/* Écrivez votre code CSS ici */" oninput="runEditorCode()"></textarea>
+          </div>
+          <div class="editor-input-area" id="area-editor-js">
+            <textarea id="editorJsInput" class="editor-textarea" placeholder="// Écrivez votre code JS ici" oninput="runEditorCode()"></textarea>
+          </div>
+        </div>
+
+        <!-- Preview (Aperçu Iframe) -->
+        <div class="editor-preview-container">
+          <div class="editor-preview-panel">
+            <div class="preview-header">
+              <i class="fas fa-globe" style="color: #00c853;"></i>
+              <span style="font-family: var(--fm); font-size: 11px; color: var(--text2);">bless://live-render/index.html</span>
+            </div>
+            <iframe id="editorPreviewIframe" class="preview-iframe" sandbox="allow-scripts"></iframe>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ==========================================================================
-     PIED DE PAGE (FOOTER)
-     ========================================================================== -->
-  <div class="footer rv">
-    <div class="footer-made">CRÉÉ PAR<span id="footerName">BLESS DEV NEXUS TEAM</span></div>
-    <div class="footer-links">
-      <a href="https://t.me/ThelastUnknowDev11" target="_blank" class="f-link"><i class="fab fa-telegram" style="color:#29b6f6"></i>Telegram</a>
-      <a href="https://whatsapp.com/channel/0029Vb78ycrInlqYocbYLX0P" target="_blank" class="f-link"><i class="fab fa-whatsapp" style="color:#25d366"></i>WhatsApp</a>
+  <!-- 4. VUE PARAMÈTRES (SETTINGS & SESSION VIEW) -->
+  <div id="view-settings" class="page-view">
+    <div class="main-card">
+      <div class="card-inner">
+        <div class="card-title"><i class="fas fa-cog"></i> Configuration & Ambiance</div>
+        <p class="card-desc">Personnalisez les thèmes visuels, configurez l'éditeur de code et gérez vos informations de session active.</p>
+        
+        <div class="settings-page-grid">
+          <!-- Colonne Gauche : Thèmes & Session -->
+          <div class="settings-col">
+            <div class="theme-sect-title"><i class="fas fa-palette"></i> Choisir une ambiance</div>
+            <div class="theme-grid">
+              <div class="th-opt tn active" onclick="setTheme('normal')"><i class="fas fa-code"></i>Normal</div>
+              <div class="th-opt te" onclick="setTheme('escanor')"><i class="fas fa-sun"></i>Escanor</div>
+              <div class="th-opt th" onclick="setTheme('hacker')"><i class="fas fa-terminal"></i>Hacker</div>
+              <div class="th-opt thr" onclick="setTheme('horror')"><i class="fas fa-skull"></i>Horror</div>
+              <div class="th-opt tcp" onclick="setTheme('cyberpunk')"><i class="fas fa-bolt"></i>Cyber</div>
+              <div class="th-opt taq" onclick="setTheme('aqua')"><i class="fas fa-tint"></i>Aqua</div>
+              <div class="th-opt tcs" onclick="setTheme('cosmos')"><i class="fas fa-meteor"></i>Cosmos</div>
+              <div class="th-opt tux" onclick="setTheme('luxury')"><i class="fas fa-crown"></i>Luxury</div>
+            </div>
+
+            <div class="theme-sect-title" style="margin-top: 24px;"><i class="fas fa-user-shield"></i> Compte & Session Active</div>
+            <div class="user-status-card" id="userStatusCard" style="margin: 0 0 10px; padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--rs); display: flex; flex-direction: column; gap: 6px;">
+              <div style="font-size: 9px; color: var(--muted); font-family: var(--fm); text-transform: uppercase;">Session Active</div>
+              <div id="userEmailDisp" style="font-family: var(--fb); font-weight: 700; font-size: 15px; color: var(--accent); word-break: break-all;">blessinglusakumunu1@gmail.com</div>
+              <div id="userRoleDisp" style="font-family: var(--fm); font-size: 11px; color: var(--text2); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Admin Suprême</div>
+              <button onclick="handleLogout()" style="width: 100%; margin-top: 12px; padding: 10px; background: linear-gradient(135deg, var(--btn), rgba(0,0,0,0.3)); border: 1px solid var(--border); color: #fff; font-family: var(--fd); font-size: 10px; font-weight: 700; border-radius: var(--rs); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;">
+                <i class="fas fa-sign-out-alt"></i> SE DÉCONNECTER
+              </button>
+            </div>
+          </div>
+
+          <!-- Colonne Droite : Options Système -->
+          <div class="settings-col">
+            <div class="theme-sect-title"><i class="fas fa-sliders-h"></i> Options de l'Éditeur</div>
+            <div class="settings-group">
+              <div class="setting-item">
+                <span class="setting-label">Taille de police</span>
+                <select id="settingFontSize" onchange="applySetting('fontSize', this.value)" class="setting-select">
+                  <option value="11px">Très petit (11px)</option>
+                  <option value="12px" selected>Normal (12px)</option>
+                  <option value="14px">Grand (14px)</option>
+                  <option value="16px">Très grand (16px)</option>
+                  <option value="18px">Géant (18px)</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Retour à la ligne auto</span>
+                <label class="switch">
+                  <input type="checkbox" id="settingWordWrap" onchange="applySetting('wordWrap', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Numéros de ligne</span>
+                <label class="switch">
+                  <input type="checkbox" id="settingLineNumbers" onchange="applySetting('lineNumbers', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="theme-sect-title" style="margin-top: 20px;"><i class="fas fa-network-wired"></i> Proxies CORS & Réseau</div>
+            <div class="settings-group">
+              <div class="setting-item">
+                <span class="setting-label">Proxy CORS Préféré</span>
+                <select id="settingPreferredProxy" onchange="applySetting('preferredProxy', this.value)" class="setting-select">
+                  <option value="0">Proxy 1 (AllOrigins)</option>
+                  <option value="1">Proxy 2 (Corsproxy.io)</option>
+                  <option value="2">Proxy 3 (Codetabs)</option>
+                  <option value="3">Proxy 4 (ThingProxy)</option>
+                  <option value="4">Proxy 5 (Heroku CORS)</option>
+                </select>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px; padding: 4px 0;">
+                <span class="setting-label" style="font-size: 11px;">Proxy CORS Personnalisé</span>
+                <input type="url" id="settingCustomProxy" onchange="applySetting('customProxy', this.value)" placeholder="https://api.allorigins.win/raw?url=" class="setting-input" style="width: 100%; font-family: var(--fm); font-size: 11px;">
+              </div>
+            </div>
+
+            <div class="theme-sect-title" style="margin-top: 20px;"><i class="fas fa-music"></i> Audio & Données</div>
+            <div class="settings-group">
+              <div class="setting-item">
+                <span class="setting-label">Source Audio Initiale</span>
+                <select id="settingMusicSource" onchange="applySetting('musicSource', this.value)" class="setting-select">
+                  <option value="funk">Bless Funk Mix (MP3)</option>
+                  <option value="synth">Synthétiseur (Live)</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Lecture Automatique</span>
+                <label class="switch">
+                  <input type="checkbox" id="settingAutoplay" onchange="applySetting('autoplay', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <button class="action-btn" onclick="clearPlatformStats()" style="width: 100%; min-height: 38px; font-size: 10px; border-radius: var(--rs); display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text2);">
+                <i class="fas fa-trash-alt"></i> RÉINITIALISER STATISTIQUES
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="theme-sect-title" style="margin-top: 24px;"><i class="fas fa-share-alt"></i> Rejoindre la communauté</div>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+          <a class="d-link" href="https://t.me/ThelastUnknowDev11" target="_blank" rel="noopener" style="flex: 1; min-width: 130px; justify-content: center;">
+            <i class="fab fa-telegram" style="color:#29b6f6"></i> Groupe Telegram
+          </a>
+          <a class="d-link" href="https://whatsapp.com/channel/0029Vb78ycrInlqYocbYLX0P" target="_blank" rel="noopener" style="flex: 1; min-width: 130px; justify-content: center;">
+            <i class="fab fa-whatsapp" style="color:#25d366"></i> Chaîne WhatsApp
+          </a>
+        </div>
+
+        <div style="text-align: center; font-family: var(--fm); font-size: 10px; color: var(--muted); margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+          DÉVELOPPÉ PAR <span style="color:var(--btn); font-weight: 700;">BLESSING LUSAKUMUNU</span> • PLATFORM v4.0
+        </div>
+      </div>
     </div>
-    <div class="footer-copy">&copy; 2026 BLESSING LUSAKUMUNU • TOUS DROITS RÉSERVÉS</div>
   </div>
 
   <!-- TOAST NOTIFICATION -->
