@@ -193,6 +193,35 @@
           </button>
         </div>
 
+        <!-- Bypass CORS / Importation Manuelle Toggle & Zone -->
+        <div class="manual-import-toggle" style="margin-top: 12px; font-family: var(--fb); font-size: 13px;">
+          <a href="#" onclick="toggleManualImport(event)" style="color: var(--accent); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-keyboard"></i> Importer manuellement le code source (Bypass 100% CORS)
+          </a>
+        </div>
+
+        <div id="manualImportArea" class="manual-import-area" style="display: none; margin-top: 14px; padding: 16px; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: var(--rs);">
+          <div style="font-family: var(--fd); font-size: 11px; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Méthode Console de Navigation (Bypass CORS)</div>
+          <p style="font-family: var(--fb); font-size: 12.5px; color: var(--text2); margin-bottom: 12px; line-height: 1.4;">
+            Si les proxies automatiques échouent en raison des protections CORS ou Cloudflare :<br>
+            1. Ouvrez le site cible dans un nouvel onglet.<br>
+            2. Appuyez sur <strong>F12</strong> (ou Clic droit &gt; Inspecter) et ouvrez l'onglet <strong>Console</strong>.<br>
+            3. Copiez-collez le code suivant dans la console et appuyez sur Entrée :<br>
+            <code style="background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: var(--rs); color: #fff; font-family: monospace; display: inline-block; margin: 6px 0; word-break: break-all; border: 1px solid var(--border);">copy(document.documentElement.outerHTML)</code>
+            <button onclick="copyConsoleScript(event)" style="padding: 4px 8px; font-size: 9px; background: var(--btn); border: none; color: #fff; border-radius: var(--rs); cursor: pointer; font-family: var(--fd); font-weight: bold; margin-left: 6px;"><i class="fas fa-copy"></i> Copier le code console</button><br>
+            4. Revenez ici et collez le code copié dans le champ ci-dessous, puis cliquez sur "Analyser".
+          </p>
+          <textarea id="manualHtmlInput" placeholder="Collez le code HTML source copié depuis le site cible ici..." style="width: 100%; height: 160px; background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: var(--rs); padding: 12px; color: var(--text); font-family: monospace; font-size: 11.5px; resize: vertical; outline: none; margin-bottom: 12px; line-height: 1.4;"></textarea>
+          <div style="display: flex; gap: 10px;">
+            <button class="action-btn" onclick="handleManualAnalyze()" style="min-height: 38px; font-size: 10px; flex: 1;">
+              <i class="fas fa-play"></i> ANALYSER LE CODE COLLÉ
+            </button>
+            <button class="action-btn" onclick="toggleManualImport(event)" style="min-height: 38px; font-size: 10px; background: transparent; border: 1px solid var(--border); color: var(--text2); box-shadow: none;">
+              Annuler
+            </button>
+          </div>
+        </div>
+
         <!-- États des Nodes de Proxies CORS -->
         <div class="proxy-status-wrap">
           <span class="proxy-lbl">État Réseau CORS :</span>
@@ -692,11 +721,12 @@
     </div>
     <div class="ctrl-row">
       <div class="music-btns">
-        <button class="mb" onclick="restartTrack()" title="Recommencer"><i class="fas fa-redo"></i></button>
+        <button class="mb" onclick="playPrevTrack()" title="Précédent"><i class="fas fa-step-backward"></i></button>
         <button class="mb play" id="playBtn" onclick="togglePlay()"><i class="fas fa-play" id="playIcon"></i></button>
+        <button class="mb" onclick="playNextTrack()" title="Suivant"><i class="fas fa-step-forward"></i></button>
         <button class="mb" onclick="muteToggle()" id="muteBtn"><i class="fas fa-volume-up" id="muteIcon"></i></button>
         <!-- Basculeur playlist Hybride MP3/Synthé -->
-        <button class="mb playlist-toggle" id="playlistToggleBtn" onclick="togglePlaylistTrack()" title="Source Musicale"><i class="fas fa-music"></i> Funk</button>
+        <button class="mb playlist-toggle" id="playlistToggleBtn" onclick="togglePlaylistTrack()" title="Source Musicale"><i class="fas fa-music"></i> Funk 1</button>
       </div>
       <div class="vol-row">
         <span style="font-family:var(--fm); font-size:9px; color:var(--muted)">VOL</span>

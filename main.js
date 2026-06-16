@@ -9,6 +9,16 @@ let activeMediaTab = 'images';
 let isPlaying = false;
 let isMuted = false;
 let currentPlaylistTrack = 'funk'; // 'funk' ou 'synth'
+
+const PLAYLIST = [
+  { src: 'funk.mp3', title: 'BLESS FUNK MIX 1', artist: 'BLESS PRIME NEXUS DEV' },
+  { src: 'funk2.mp3', title: 'BLESS FUNK MIX 2', artist: 'BLESS PRIME NEXUS DEV' },
+  { src: 'funk3.mp3', title: 'BLESS FUNK MIX 3', artist: 'BLESS PRIME NEXUS DEV' },
+  { src: 'funk4.mp3', title: 'BLESS FUNK MIX 4', artist: 'BLESS PRIME NEXUS DEV' },
+  { src: 'funk5.mp3', title: 'BLESS FUNK MIX 5', artist: 'BLESS PRIME NEXUS DEV' },
+  { src: 'funk6.mp3', title: 'BLESS FUNK MIX 6', artist: 'BLESS PRIME NEXUS DEV' }
+];
+let currentTrackIndex = 0;
 let matrixRAF = null;
 let canvasRAF = null;
 let sitesCount = parseInt(localStorage.getItem('bl-sites') || '0');
@@ -1390,6 +1400,100 @@ async function handleAnalyze() {
   document.getElementById('btnIcon').className = 'fas fa-search';
 }
 
+// ==========================================================================
+// IMPORTATION MANUELLE ET CONSOLE (BYPASS CORS)
+// ==========================================================================
+function toggleManualImport(e) {
+  if (e) e.preventDefault();
+  const area = document.getElementById('manualImportArea');
+  if (area) {
+    const isHidden = area.style.display === 'none';
+    area.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) {
+      area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+}
+
+function copyConsoleScript(e) {
+  if (e) e.stopPropagation();
+  const script = "copy(document.documentElement.outerHTML)";
+  navigator.clipboard.writeText(script)
+    .then(() => showToast('✓ Code console copié !'))
+    .catch(() => showToast('✗ Échec de la copie'));
+}
+
+async function handleManualAnalyze() {
+  const htmlInput = document.getElementById('manualHtmlInput').value.trim();
+  if (!htmlInput) { showToast('⚠ Veuillez coller le code source HTML.'); return; }
+
+  const loading = document.getElementById('loading');
+  const codeDisplay = document.getElementById('codeDisplay');
+  const successInfo = document.getElementById('successInfo');
+  const errorInfo = document.getElementById('errorInfo');
+
+  // Clear states
+  loading.classList.add('show');
+  codeDisplay.classList.remove('show');
+  successInfo.classList.remove('show');
+  errorInfo.classList.remove('show');
+  
+  // Clear search query
+  document.getElementById('codeSearch').value = '';
+  searchMatches = [];
+  document.getElementById('searchCount').textContent = '0/0';
+  
+  document.getElementById('loadingText').textContent = 'ANALYSE DU CODE IMPORTÉ';
+  document.getElementById('loadingSub').textContent = 'Traitement en cours...';
+
+  // Wait a small timeout to let the UI update
+  setTimeout(() => {
+    try {
+      // Parse Page Data
+      parsedData = parseHTML(htmlInput, 'http://import-manuel.local');
+      
+      // Process formatting and code highlighting
+      const formatted = formatHTML(htmlInput);
+      currentCode = formatted;
+      const highlighted = highlightHTML(formatted);
+      const lines = formatted.split('\n').length;
+
+      // Save globally
+      sitesCount++;
+      linesCount += lines;
+      localStorage.setItem('bl-sites', sitesCount);
+      localStorage.setItem('bl-lines', linesCount);
+      updateStats();
+
+      // Render elements
+      displayCode(highlighted);
+      renderAnalysisTab(parsedData);
+      renderMediaTab(parsedData);
+      renderStatsTab(parsedData);
+
+      document.getElementById('codeFname').textContent = 'code-importe-manuel.html';
+
+      loading.classList.remove('show');
+      codeDisplay.classList.add('show');
+      document.getElementById('successMsg').textContent = `${lines} lignes importées et analysées avec succès !`;
+      successInfo.classList.add('show');
+      showToast(`✓ ${lines} lignes de code importées !`);
+      
+      // Open code tab automatically
+      switchTab('code');
+      
+      // Hide manual import area after success
+      document.getElementById('manualImportArea').style.display = 'none';
+
+    } catch (err) {
+      loading.classList.remove('show');
+      document.getElementById('errorMsg').textContent = "Erreur lors de l'analyse : " + err.message;
+      errorInfo.classList.add('show');
+      showToast('✗ Analyse échouée');
+    }
+  }, 100);
+}
+
 function formatHTML(html) {
   let out = '', indent = 0;
   const voids = /^(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)/i;
@@ -1434,28 +1538,60 @@ function togglePlaylistTrack() {
       // Start Synth
       startProceduralSynth();
     }
+    
+    const d = TD[currentTheme] || TD.normal;
+    document.getElementById('musicTitle').textContent = d.mTitle;
+    document.getElementById('musicArtist').textContent = d.mArtist;
+    document.getElementById('timeDisp').textContent = 'Live / Synth';
   } else {
     currentPlaylistTrack = 'funk';
-    playlistBtn.innerHTML = '<i class="fas fa-music"></i> Funk';
-    showToast('🎵 Source : BLESS FUNK MIX');
+    showToast('🎵 Source : Playlist BLESS FUNK');
     
     // Stop Synth if playing
     if (isPlaying) {
       stopProceduralSynth();
-      // Play MP3
+    }
+    loadTrack(currentTrackIndex);
+    if (isPlaying) {
       audio.play().catch(() => {});
     }
   }
+}
+
+function loadTrack(index) {
+  if (index < 0) index = PLAYLIST.length - 1;
+  if (index >= PLAYLIST.length) index = 0;
+  currentTrackIndex = index;
   
-  // Update UI metadata
-  const d = TD[currentTheme] || TD.normal;
-  if (currentPlaylistTrack === 'synth') {
-    document.getElementById('musicTitle').textContent = d.mTitle;
-    document.getElementById('musicArtist').textContent = d.mArtist;
-  } else {
-    document.getElementById('musicTitle').textContent = 'BLESS FUNK MIX';
-    document.getElementById('musicArtist').textContent = 'BLESS PRIME NEXUS DEV';
+  const track = PLAYLIST[currentTrackIndex];
+  audio.src = track.src;
+  
+  if (currentPlaylistTrack === 'funk') {
+    document.getElementById('musicTitle').textContent = track.title;
+    document.getElementById('musicArtist').textContent = track.artist;
+    
+    // Mettre à jour le bouton de la playlist avec le numéro de la piste
+    const playlistToggleBtn = document.getElementById('playlistToggleBtn');
+    if (playlistToggleBtn) {
+      playlistToggleBtn.innerHTML = `<i class="fas fa-music"></i> Funk ${currentTrackIndex + 1}`;
+    }
   }
+}
+
+function playNextTrack() {
+  loadTrack(currentTrackIndex + 1);
+  if (isPlaying) {
+    audio.play().catch(() => {});
+  }
+  showToast(`🎵 Lecture de : ${PLAYLIST[currentTrackIndex].title}`);
+}
+
+function playPrevTrack() {
+  loadTrack(currentTrackIndex - 1);
+  if (isPlaying) {
+    audio.play().catch(() => {});
+  }
+  showToast(`🎵 Lecture de : ${PLAYLIST[currentTrackIndex].title}`);
 }
 
 function initAudioSystem() {
@@ -1970,8 +2106,7 @@ audio.addEventListener('pause', () => {
 });
 audio.addEventListener('ended', () => {
   if (currentPlaylistTrack === 'funk') {
-    audio.currentTime = 0;
-    audio.play().catch(() => {});
+    playNextTrack();
   }
 });
 audio.addEventListener('timeupdate', () => {
@@ -2006,6 +2141,7 @@ function tryAutoplay() {
     if (pBtn) pBtn.innerHTML = '<i class="fas fa-microchip"></i> Synthé';
   } else {
     currentPlaylistTrack = 'funk';
+    loadTrack(currentTrackIndex);
   }
 
   // 2. Si l'autoplay est désactivé, on n'essaie pas de jouer au chargement
