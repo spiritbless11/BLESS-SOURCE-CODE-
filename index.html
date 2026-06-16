@@ -50,9 +50,7 @@
     </div>
     <div class="topbar-right">
       <button class="ctrl" onclick="toggleMode()" id="modeBtn" title="Mode Clair / Sombre"><i class="fas fa-sun"></i></button>
-      <button class="ctrl" onclick="switchView('settings')" title="Paramètres"><i class="fas fa-cog"></i></button>
-      <button class="ctrl" onclick="switchView('settings')" title="Thèmes & Options"><i class="fas fa-palette"></i></button>
-      <button class="ctrl" onclick="handleLogout()" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></button>
+      <button class="ctrl" onclick="openAccountModal()" title="Mon Compte"><i class="fas fa-user-circle"></i></button>
     </div>
   </div>
 
@@ -512,6 +510,23 @@
                 </select>
               </div>
               <div class="setting-item">
+                <span class="setting-label">Thème de Coloration</span>
+                <select id="settingEditorTheme" onchange="applySetting('editorTheme', this.value)" class="setting-select">
+                  <option value="default">Bless Neon (Défaut)</option>
+                  <option value="monokai">Monokai Retro</option>
+                  <option value="dark">VS Code Dark</option>
+                  <option value="light">Light Minimalist</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Hauteur de l'éditeur</span>
+                <select id="settingEditorHeight" onchange="applySetting('editorHeight', this.value)" class="setting-select">
+                  <option value="300px">Compact (300px)</option>
+                  <option value="420px" selected>Standard (420px)</option>
+                  <option value="600px">Étendu (600px)</option>
+                </select>
+              </div>
+              <div class="setting-item">
                 <span class="setting-label">Retour à la ligne auto</span>
                 <label class="switch">
                   <input type="checkbox" id="settingWordWrap" onchange="applySetting('wordWrap', this.checked)">
@@ -522,6 +537,24 @@
                 <span class="setting-label">Numéros de ligne</span>
                 <label class="switch">
                   <input type="checkbox" id="settingLineNumbers" onchange="applySetting('lineNumbers', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="theme-sect-title" style="margin-top: 20px;"><i class="fas fa-magic"></i> Effets Visuels & Audio</div>
+            <div class="settings-group">
+              <div class="setting-item">
+                <span class="setting-label">Particules d'arrière-plan</span>
+                <label class="switch">
+                  <input type="checkbox" id="settingParticles" onchange="applySetting('particles', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Bruitages système</span>
+                <label class="switch">
+                  <input type="checkbox" id="settingSound" onchange="applySetting('sound', this.checked)">
                   <span class="slider"></span>
                 </label>
               </div>
@@ -587,6 +620,39 @@
 
   <!-- TOAST NOTIFICATION -->
   <div class="toast" id="toast"></div>
+
+  <!-- ==========================================================================
+     FENETRE MODALE DE PROFIL/COMPTE (ACCOUNT MODAL)
+     ========================================================================== -->
+  <div class="lightbox-modal" id="accountModal" onclick="closeAccountModal()">
+    <div class="lightbox-content-wrap" onclick="event.stopPropagation()" style="max-width: 360px; width: 100%;">
+      <button class="lightbox-close" onclick="closeAccountModal()"><i class="fas fa-times"></i></button>
+      
+      <div style="background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 26px 22px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: relative; overflow: hidden; text-align: center;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--btn), var(--accent), transparent);"></div>
+        
+        <!-- Avatar/Icon -->
+        <div style="width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, var(--btn), rgba(0,0,0,0.5)); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 30px; color: #fff; margin: 0 auto 16px; box-shadow: 0 0 18px var(--glow-acc); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        
+        <div style="font-family: var(--fd); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px;">Session Active</div>
+        <div id="modalUserEmail" style="font-family: var(--fb); font-weight: 700; font-size: 17px; color: var(--accent); word-break: break-all; margin-bottom: 6px;">blessinglusakumunu1@gmail.com</div>
+        <div id="modalUserRole" style="font-family: var(--fm); font-size: 12px; color: var(--text2); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 20px;">Admin Suprême</div>
+        
+        <div style="text-align: left; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: var(--rs); padding: 14px; font-family: var(--fm); font-size: 11.5px; color: var(--text2); display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px;">
+          <div><span style="color: var(--muted)">ID DE SESSION :</span> <span id="modalUserId" style="color: var(--accent); font-family: var(--fm);">admin-supreme-uid</span></div>
+          <div><span style="color: var(--muted)">PLATEFORME :</span> BLESS SOURCE PLATFORM v4.0</div>
+          <div><span style="color: var(--muted)">BASE DE DONNÉES :</span> <span id="modalDbStatus" style="color: #00c853;">Firebase Connecté</span></div>
+          <div><span style="color: var(--muted)">STATUT DE SÉCURITÉ :</span> <span style="color: #00c853;"><i class="fas fa-shield-alt"></i> 100% Sécurisé</span></div>
+        </div>
+        
+        <button onclick="handleLogout()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, var(--btn), rgba(0,0,0,0.4)); border: 1px solid var(--border); color: #fff; font-family: var(--fd); font-size: 10.5px; font-weight: 700; border-radius: var(--rs); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 12px var(--glow-btn);">
+          <i class="fas fa-sign-out-alt"></i> SE DÉCONNECTER DU COMPTE
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ==========================================================================
      FENETRE MODALE VISIONNEUSE D'IMAGE (LIGHTBOX MODAL)

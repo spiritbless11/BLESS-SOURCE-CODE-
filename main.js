@@ -17,8 +17,12 @@ let linesCount = parseInt(localStorage.getItem('bl-lines') || '0');
 // Configuration Globale des Paramètres (Settings)
 const DEFAULT_SETTINGS = {
   fontSize: '12px',
+  editorTheme: 'default',
+  editorHeight: '420px',
   wordWrap: false,
   lineNumbers: true,
+  particles: true,
+  sound: true,
   preferredProxy: '0',
   customProxy: '',
   musicSource: 'funk',
@@ -248,27 +252,79 @@ function applySettings() {
     const pBtn = document.getElementById('playlistToggleBtn');
     if (pBtn) pBtn.innerHTML = '<i class="fas fa-music"></i> Funk';
   }
+
+  // 5. Thème de Coloration de l'Éditeur
+  const syntaxThemes = {
+    default: { tag: '#569cd6', attr: '#9cdcfe', str: '#ce9178', comm: '#6a9955', spec: '#c586c0' },
+    monokai: { tag: '#f92672', attr: '#a6e22e', str: '#e6db74', comm: '#75715e', spec: '#66d9ef' },
+    dark: { tag: '#4fc1ff', attr: '#9cdcfe', str: '#ce9178', comm: '#6a9955', spec: '#c586c0' },
+    light: { tag: '#0000ff', attr: '#a31515', str: '#0451a5', comm: '#008000', spec: '#098658' }
+  };
+  const themeVars = syntaxThemes[settings.editorTheme] || syntaxThemes.default;
+  for (let key in themeVars) {
+    document.documentElement.style.setProperty(`--hl-${key}`, themeVars[key]);
+  }
+
+  // 6. Hauteur de l'éditeur de code
+  document.querySelectorAll('.editor-textarea').forEach(ta => {
+    ta.style.height = settings.editorHeight || '420px';
+  });
+
+  // 7. Particules d'arrière-plan & Performance
+  const bgCanvas = document.getElementById('bgCanvas');
+  const matrixCanvas = document.getElementById('matrixCanvas');
+  if (settings.particles === false) {
+    if (canvasRAF) { cancelAnimationFrame(canvasRAF); canvasRAF = null; }
+    if (matrixRAF) { cancelAnimationFrame(matrixRAF); matrixRAF = null; }
+    if (bgCanvas) bgCanvas.getContext('2d').clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    if (matrixCanvas) matrixCanvas.getContext('2d').clearRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+  } else {
+    // Si déjà chargé, re-déclencher
+    if (isAudioInitialized) {
+      if (currentTheme === 'hacker') {
+        if (!matrixRAF) startMatrix();
+      } else {
+        if (!canvasRAF) initParticles();
+      }
+    }
+  }
 }
 
 function applySetting(key, val) {
+  // Convert String booleans if needed
+  if (val === 'true' || val === true) val = true;
+  else if (val === 'false' || val === false) val = false;
+
   settings[key] = val;
   localStorage.setItem('bl-settings', JSON.stringify(settings));
   applySettings();
+
+  // Bip sonore système doux
+  playSystemBeep(580, 0.08, 'triangle');
+
   showToast('⚙️ Paramètre mis à jour avec succès');
 }
 
 function updateSettingsUI() {
   const fsSel = document.getElementById('settingFontSize');
+  const etSel = document.getElementById('settingEditorTheme');
+  const ehSel = document.getElementById('settingEditorHeight');
   const wwChk = document.getElementById('settingWordWrap');
   const lnChk = document.getElementById('settingLineNumbers');
+  const ptChk = document.getElementById('settingParticles');
+  const sdChk = document.getElementById('settingSound');
   const pxSel = document.getElementById('settingPreferredProxy');
   const pxInp = document.getElementById('settingCustomProxy');
   const muSel = document.getElementById('settingMusicSource');
   const apChk = document.getElementById('settingAutoplay');
   
   if (fsSel) fsSel.value = settings.fontSize;
+  if (etSel) etSel.value = settings.editorTheme || 'default';
+  if (ehSel) ehSel.value = settings.editorHeight || '420px';
   if (wwChk) wwChk.checked = settings.wordWrap;
   if (lnChk) lnChk.checked = settings.lineNumbers;
+  if (ptChk) ptChk.checked = settings.particles !== false;
+  if (sdChk) sdChk.checked = settings.sound !== false;
   if (pxSel) pxSel.value = settings.preferredProxy;
   if (pxInp) pxInp.value = settings.customProxy;
   if (muSel) muSel.value = settings.musicSource;
@@ -296,6 +352,7 @@ function clearPlatformStats() {
 /* Tab Management */
 function switchTab(tabId) {
   activeTab = tabId;
+  playSystemBeep(650, 0.05, 'sine');
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.remove('active');
     if (btn.getAttribute('data-tab') === tabId) btn.classList.add('active');
@@ -309,6 +366,7 @@ function switchTab(tabId) {
 
 function switchMediaTab(subTabId) {
   activeMediaTab = subTabId;
+  playSystemBeep(650, 0.05, 'sine');
   document.querySelectorAll('.sub-tab-btn').forEach(btn => {
     btn.classList.remove('active');
     if (btn.getAttribute('data-sub-tab') === subTabId) btn.classList.add('active');
@@ -2027,6 +2085,9 @@ function switchView(viewId) {
   // Re-déclencher ScrollReveal sur le changement d'onglet
   initScrollReveal();
 
+  // Jouer le bip sonore système
+  playSystemBeep(520, 0.06, 'sine');
+
   showToast(`📍 Navigation : ${viewId.toUpperCase()}`);
 }
 
@@ -2035,6 +2096,93 @@ function openMenu() { switchView('settings'); }
 function closeMenu() {}
 function openSettings() { switchView('settings'); }
 function closeSettings() {}
+
+/* ==========================================================================
+   SYSTEME DE BRUITAGES SYNTHÉTISEURS (NEW)
+   ========================================================================== */
+function playSystemBeep(freq = 600, duration = 0.08, type = 'sine') {
+  if (settings.sound === false) return;
+  
+  if (!audioCtx) {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContextClass();
+    } catch (e) {
+      return;
+    }
+  }
+  
+  try {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    
+    gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime); // son très doux
+    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+    
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch (e) {
+    console.warn("Bruitage bloqué", e);
+  }
+}
+
+/* ==========================================================================
+   FENETRES COMPTE & PROFIL (NEW)
+   ========================================================================== */
+function openAccountModal() {
+  const modal = document.getElementById('accountModal');
+  if (!modal) return;
+  
+  const userEmail = localStorage.getItem('bl-user-email') || 'visiteur@platform.com';
+  const userRole = localStorage.getItem('bl-user-role') || 'visiteur';
+  const userUid = localStorage.getItem('bl-user-uid') || 'non-connecté';
+  
+  const mEmail = document.getElementById('modalUserEmail');
+  const mRole = document.getElementById('modalUserRole');
+  const mId = document.getElementById('modalUserId');
+  const mDb = document.getElementById('modalDbStatus');
+  
+  if (mEmail) mEmail.textContent = userEmail;
+  if (mRole) {
+    if (userRole === 'admin-supreme') {
+      mRole.textContent = 'Admin Suprême';
+      mRole.style.color = 'var(--accent)';
+      mRole.style.textShadow = '0 0 10px var(--glow-acc)';
+    } else {
+      mRole.textContent = 'Utilisateur standard';
+      mRole.style.color = 'var(--text2)';
+      mRole.style.textShadow = 'none';
+    }
+  }
+  if (mId) mId.textContent = userUid;
+  if (mDb) {
+    if (window.dbAdapter && window.dbAdapter.isFirebase) {
+      mDb.textContent = 'Firebase Connecté';
+      mDb.style.color = '#00c853';
+    } else {
+      mDb.textContent = 'Simulateur Local';
+      mDb.style.color = 'var(--accent)';
+    }
+  }
+
+  playSystemBeep(800, 0.08, 'sine');
+  modal.classList.add('show');
+}
+
+function closeAccountModal() {
+  const modal = document.getElementById('accountModal');
+  if (modal) {
+    playSystemBeep(450, 0.08, 'sine');
+    modal.classList.remove('show');
+  }
+}
 
 /* ==========================================================================
    LOGIQUE DE L'ÉDITEUR DE CODE INTERACTIF (NEW)
@@ -2062,6 +2210,7 @@ const EDITOR_TEMPLATES = {
 
 function switchEditorTab(tabId) {
   activeEditorTab = tabId;
+  playSystemBeep(650, 0.05, 'sine');
   
   // Onglets UI
   document.querySelectorAll('.editor-tab-btn').forEach(btn => {
@@ -2109,6 +2258,7 @@ function runEditorCode() {
     </html>
   `;
 
+  playSystemBeep(880, 0.08, 'triangle');
   iframe.srcdoc = codeCombined;
 }
 
@@ -2123,6 +2273,7 @@ function importToEditor() {
   document.getElementById('editorCssInput').value = '';
   document.getElementById('editorJsInput').value = '';
 
+  playSystemBeep(740, 0.1, 'sine');
   showToast("✓ Code HTML importé avec succès dans l'Éditeur !");
   switchEditorTab('html');
   runEditorCode();
@@ -2157,6 +2308,7 @@ function downloadEditorCode() {
 </html>
   `.trim();
 
+  playSystemBeep(700, 0.08, 'sine');
   const b = new Blob([exportCode], { type: 'text/html' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(b);
@@ -2168,6 +2320,7 @@ function downloadEditorCode() {
 
 function clearEditor() {
   if (confirm("Voulez-vous vraiment vider tout le code de l'éditeur ?")) {
+    playSystemBeep(450, 0.12, 'sine');
     document.getElementById('editorHtmlInput').value = '';
     document.getElementById('editorCssInput').value = '';
     document.getElementById('editorJsInput').value = '';
@@ -2189,6 +2342,7 @@ function loadEditorTemplate(templateId) {
   document.getElementById('editorCssInput').value = tmpl.css || '';
   document.getElementById('editorJsInput').value = tmpl.js || '';
 
+  playSystemBeep(700, 0.08, 'sine');
   runEditorCode();
   showToast(`✨ Modèle "${templateId}" chargé`);
 }
@@ -2226,6 +2380,7 @@ window.addEventListener('load', () => {
 
   // Appliquer les paramètres enregistrés
   applySettings();
+  updateSettingsUI();
 
   updateStats();
   tryAutoplay();
