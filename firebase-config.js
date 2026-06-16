@@ -45,10 +45,36 @@ class DatabaseAdapter {
   async signIn(email, password) {
     if (this.isFirebase) {
       try {
-        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        let userCredential;
+        try {
+          userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        } catch (signInError) {
+          // Auto-création résiliente de l'Admin Suprême s'il n'existe pas encore dans Firebase Auth
+          const isAdminEmail = email.toLowerCase() === 'blessinglusakumunu1@gmail.com';
+          const isUserNotFound = signInError.code === 'auth/user-not-found' || signInError.code === 'auth/invalid-credential';
+          
+          if (isAdminEmail && isUserNotFound) {
+            console.log("🔥 Compte Admin Suprême non trouvé ou non configuré. Tentative de création automatique...");
+            try {
+              // On tente de créer le compte avec les identifiants fournis (généralement blessinglusakumunu1@gmail.com / spiritdelice1)
+              userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+              console.log("🔥 Compte Admin Suprême créé et configuré automatiquement avec succès !");
+            } catch (signUpError) {
+              // Si le compte existe déjà (par exemple s'il a échoué à cause d'un mauvais mot de passe en mode protection énumération)
+              if (signUpError.code === 'auth/email-already-in-use') {
+                throw signInError; // Lancer l'erreur de connexion d'origine (mot de passe incorrect)
+              }
+              console.error("Échec de l'auto-création de l'admin suprême :", signUpError);
+              throw signUpError;
+            }
+          } else {
+            throw signInError;
+          }
+        }
+        
         const user = userCredential.user;
         
-        // Récupérer le rôle depuis Firestore
+        // Récupérer le rôle depuis Firestore (résistant aux pannes/règles de sécurité)
         let role = 'user';
         try {
           const doc = await firebase.firestore().collection('users').doc(user.uid).get();
@@ -56,23 +82,27 @@ class DatabaseAdapter {
             role = doc.data().role || 'user';
           }
         } catch (e) {
-          console.warn("Impossible de lire le rôle depuis Firestore, utilisation du rôle par défaut.", e);
+          console.warn("⚠️ Impossible de lire le rôle depuis Firestore, utilisation du rôle par défaut.", e);
         }
 
         // Cas spécial pour l'Admin Suprême sur Firebase
         if (email.toLowerCase() === 'blessinglusakumunu1@gmail.com') {
           role = 'admin-supreme';
-          // Mettre à jour dans Firestore pour s'assurer que c'est persistant
-          await firebase.firestore().collection('users').doc(user.uid).set({
-            email: email,
-            role: 'admin-supreme',
-            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-          }, { merge: true });
+          // Mettre à jour dans Firestore pour s'assurer que c'est persistant (résistant aux pannes/règles)
+          try {
+            await firebase.firestore().collection('users').doc(user.uid).set({
+              email: email.toLowerCase(),
+              role: 'admin-supreme',
+              lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+          } catch (firestoreError) {
+            console.warn("⚠️ Impossible de persister le rôle admin-supreme dans Firestore (règles de sécurité ou base non configurée) :", firestoreError);
+          }
         }
 
         return { success: true, email: user.email, role: role, uid: user.uid };
       } catch (error) {
-        throw new Error(this.getReadableAuthError(error.code));
+        throw new Error(this.getReadableAuthError(error));
       }
     } else {
       // Mode simulation LocalStorage
@@ -113,16 +143,20 @@ class DatabaseAdapter {
         const user = userCredential.user;
         const role = 'user'; // Rôle standard par défaut
 
-        // Enregistrer le profil dans Firestore
-        await firebase.firestore().collection('users').doc(user.uid).set({
-          email: email.toLowerCase(),
-          role: role,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        // Enregistrer le profil dans Firestore (résistant aux pannes/règles de sécurité)
+        try {
+          await firebase.firestore().collection('users').doc(user.uid).set({
+            email: email.toLowerCase(),
+            role: role,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch (firestoreError) {
+          console.warn("⚠️ Compte créé avec succès, mais impossible de créer le document de profil dans Firestore (règles ou base non configurée) :", firestoreError);
+        }
 
         return { success: true, email: user.email, role: role, uid: user.uid };
       } catch (error) {
-        throw new Error(this.getReadableAuthError(error.code));
+        throw new Error(this.getReadableAuthError(error));
       }
     } else {
       // Mode simulation LocalStorage
@@ -152,8 +186,14 @@ class DatabaseAdapter {
     }
   }
 
-  // Traduction des erreurs Firebase en français compréhensible
-  getReadableAuthError(code) {
+  // Traduction des erreurs Firebase en français compréhensible avec diagnostic détaillé
+  getReadableAuthError(error) {
+    console.error("🔥 Détail de l'erreur d'authentification :", error);
+    if (!error) return "Une erreur d'authentification inconnue est survenue.";
+    
+    const code = error.code;
+    const message = error.message;
+
     switch (code) {
       case 'auth/invalid-email':
         return "L'adresse email n'est pas valide.";
@@ -166,10 +206,21 @@ class DatabaseAdapter {
       case 'auth/email-already-in-use':
         return "Cette adresse email est déjà associée à un autre compte.";
       case 'auth/operation-not-allowed':
-        return "L'inscription par email/mot de passe n'est pas activée dans Firebase.";
+        return "L'authentification par email/mot de passe n'est pas activée dans votre console Firebase.";
       case 'auth/weak-password':
         return "Le mot de passe doit contenir au moins 6 caractères.";
+      case 'auth/invalid-api-key':
+        return "La clé API Firebase fournie est invalide. Veuillez vérifier votre configuration.";
+      case 'auth/network-request-failed':
+        return "Connexion réseau impossible. Vérifiez votre connexion internet ou si l'accès à Firebase est bloqué.";
+      case 'auth/invalid-credential':
+        return "Identifiants incorrects ou compte non trouvé.";
       default:
+        // Si c'est un message d'erreur d'origine Firestore ou autre (comme un problème de domaine non autorisé ou de permissions)
+        if (message) {
+          // Nettoyer un peu les préfixes Firebase complexes pour l'utilisateur final
+          return message.replace("Firebase: ", "");
+        }
         return "Une erreur d'authentification est survenue. Veuillez réessayer.";
     }
   }
