@@ -7,12 +7,12 @@
  */
 
 const FIREBASE_CONFIG = {
-   apiKey: "AIzaSyAIHrvCbTOhkDaM5xFb6y6KHduKMAoZ6ug",
-  authDomain: "bless-code-source.firebaseapp.com",
-  projectId: "bless-code-source",
-  storageBucket: "bless-code-source.firebasestorage.app",
-  messagingSenderId: "159511906846",
-  appId: "1:159511906846:web:0bfebab0872755fc957c0f"
+   apiKey: "AIzaSyD4ty-l99HdAWyw_kOO_ZWTwQVzxexxrms",
+  authDomain: "bless-source-db.firebaseapp.com",
+  projectId: "bless-source-db",
+  storageBucket: "bless-source-db.firebasestorage.app",
+  messagingSenderId: "999507069192",
+  appId: "1:999507069192:web:1c3d5d14e40766ba0704bd"
 };
 
 // Variable globale pour déterminer si Firebase est actif
@@ -207,6 +207,8 @@ class DatabaseAdapter {
         return "Cette adresse email est déjà associée à un autre compte.";
       case 'auth/operation-not-allowed':
         return "L'authentification par email/mot de passe n'est pas activée dans votre console Firebase.";
+      case 'auth/configuration-not-found':
+        return "L'authentification par E-mail/Mot de passe n'est pas activée dans votre console Firebase. Veuillez aller dans votre Console Firebase > Authentication > Sign-in method, puis activer le fournisseur 'E-mail/Mot de passe'.";
       case 'auth/weak-password':
         return "Le mot de passe doit contenir au moins 6 caractères.";
       case 'auth/invalid-api-key':
